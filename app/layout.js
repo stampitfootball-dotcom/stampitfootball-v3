@@ -1,4 +1,5 @@
 import './styles.css';
+import './picks.css';
 import SiteEnhancer from './site-enhancer';
 
 export const metadata = {
