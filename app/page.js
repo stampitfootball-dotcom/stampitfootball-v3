@@ -27,6 +27,7 @@ function eventIcon(e){
   return '•';
 }
 function eventTime(e){ return `${e.elapsed ?? ''}${e.extra?`+${e.extra}`:''}'`; }
+function articleTime(v){ if(!v) return 'NOW'; try { return new Date(v).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); } catch { return 'NOW'; } }
 
 function LocalMinute({m, fetchedAt}){
   const [now,setNow]=useState(Date.now());
@@ -123,7 +124,21 @@ export default function Home(){
 
     <section id="news" className="section"><div className="sectionTitle"><div>FOOTBALL NOW — MINUTE BY MINUTE</div><small>{newsConfigured?'AUTO-REFRESHING NEWS':'NEWS FEED NEXT'}</small></div>
       <div className="ticker"><span>BREAKING</span><b>{news[0]?.title || 'The live football data is connected. Breaking-news feed is our next integration.'}</b></div>
-      {news.length?<div className="newsGrid">{news.slice(0,9).map((a,i)=><article className="news" key={i}>{a.image&&<img src={a.image} alt=""}/><small>{a.source} · {a.publishedAt?new Date(a.publishedAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'NOW'}</small><h3>{a.title}</h3><p>{a.description}</p>{a.url&&<a href={a.url} target="_blank" rel="noreferrer">READ STORY →</a>}</article>)}</div>:<div className="empty">Breaking news, transfers, injuries and major football developments will appear here after the news feed is connected.</div>}
+      {news.length > 0 ? (
+        <div className="newsGrid">
+          {news.slice(0,9).map((a,i) => (
+            <article className="news" key={i}>
+              {a.image ? <img src={a.image} alt=""/> : null}
+              <small>{a.source || 'Football'} · {articleTime(a.publishedAt)}</small>
+              <h3>{a.title}</h3>
+              <p>{a.description}</p>
+              {a.url ? <a href={a.url} target="_blank" rel="noreferrer">READ STORY →</a> : null}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="empty">Breaking news, transfers, injuries and major football developments will appear here after the news feed is connected.</div>
+      )}
     </section>
 
     <section id="predictions" className="section"><div className="sectionTitle"><div>PREDICTIONS</div><small>FREE + VIP</small></div><div className="split">
