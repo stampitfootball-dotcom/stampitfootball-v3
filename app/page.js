@@ -92,10 +92,10 @@ function Standings({selected,allLeagues,setSelected}){
 
 export default function Home(){
   const [liveMatches,setLiveMatches]=useState([]),[fixtures,setFixtures]=useState([]),[news,setNews]=useState([]),[auth,setAuth]=useState(false),[reason,setReason]=useState('Join Stamp It Football');
-  const [scoresConfigured,setScoresConfigured]=useState(false),[newsConfigured,setNewsConfigured]=useState(false),[liveFetchedAt,setLiveFetchedAt]=useState(null);
+  const [scoresConfigured,setScoresConfigured]=useState(null),[liveLoading,setLiveLoading]=useState(true),[liveError,setLiveError]=useState(false),[newsConfigured,setNewsConfigured]=useState(false),[liveFetchedAt,setLiveFetchedAt]=useState(null);
   const [allLeagues,setAllLeagues]=useState([]),[selectedLeague,setSelectedLeague]=useState({id:39,name:'Premier League',country:'England',season:2026,logo:'https://media.api-sports.io/football/leagues/39.png'}),[matchId,setMatchId]=useState(null);
 
-  const loadLive=()=>fetch('/api/live',{cache:'no-store'}).then(r=>r.json()).then(d=>{setScoresConfigured(!!d.configured);setLiveMatches(d.matches||[]);setLiveFetchedAt(d.fetchedAt||Date.now())}).catch(()=>{});
+  const loadLive=async()=>{try{const r=await fetch('/api/live',{cache:'no-store'});if(!r.ok) throw new Error('live feed');const d=await r.json();setScoresConfigured(d.configured!==false);setLiveMatches(d.matches||[]);setLiveFetchedAt(d.fetchedAt||Date.now());setLiveError(false)}catch{setLiveError(true)}finally{setLiveLoading(false)}};
   const loadFixtures=()=>fetch('/api/fixtures?days=2',{cache:'no-store'}).then(r=>r.json()).then(d=>{setScoresConfigured(!!d.configured);setFixtures(d.matches||[])}).catch(()=>{});
   const loadNews=()=>fetch('/api/news',{cache:'no-store'}).then(r=>r.json()).then(d=>{setNewsConfigured(!!d.configured);setNews(d.articles||[])}).catch(()=>{});
   useEffect(()=>{loadLive();loadFixtures();loadNews();fetch('/api/leagues').then(r=>r.json()).then(d=>{const ls=d.leagues||[];setAllLeagues(ls);const pl=ls.find(x=>x.id===39);if(pl)setSelectedLeague(pl)}).catch(()=>{});const liveTimer=setInterval(loadLive,20000);const fixtureTimer=setInterval(loadFixtures,300000);const newsTimer=setInterval(loadNews,60000);return()=>{clearInterval(liveTimer);clearInterval(fixtureTimer);clearInterval(newsTimer)}},[]);
@@ -111,8 +111,8 @@ export default function Home(){
 
     <section id="top" className="heroLaunch"><img className="heroLogo" src="/assets/logo.jpeg"/><div><div className="eyebrow">STAMP IT FOOTBALL</div><h1>IT’S FOOTBALL,<br/><span>NOT SOCCER.</span></h1><p>Live scores, fixtures, tables, breaking news, predictions and prize drafts — one football home.</p><div className="cta"><a className="primary" href="#scores">LIVE FOOTBALL</a><a className="secondary" href="#drafts">WIN PRIZES</a></div></div></section>
 
-    <section id="scores" className="section"><div className="sectionTitle"><div><span className="liveDot"></span> LIVE SCORES</div><small>{scoresConfigured?'API-FOOTBALL · AUTO-REFRESHING':'CONNECT FOOTBALL API'}</small></div>
-      {liveMatches.length?<div className="matchGrid">{liveMatches.map(m=><MatchCard key={m.id} m={m} onOpen={setMatchId} fetchedAt={liveFetchedAt}/>)}</div>:<div className="empty">{scoresConfigured?'No matches are live right now. Upcoming fixtures are below.':'Live scores will appear here as soon as API-Football is connected.'}</div>}
+    <section id="scores" className="section"><div className="sectionTitle"><div><span className="liveDot"></span> LIVE SCORES</div><small>{liveLoading?'LOADING LIVE SCORES…':liveError?'LIVE FEED RETRYING':scoresConfigured?'API-FOOTBALL · AUTO-REFRESHING':'API NOT CONNECTED'}</small></div>
+      {liveLoading?<div className="empty">Checking live matches…</div>:liveError?<div className="empty">Live scores are temporarily unavailable. We’ll retry automatically.</div>:liveMatches.length?<div className="matchGrid">{liveMatches.map(m=><MatchCard key={m.id} m={m} onOpen={setMatchId} fetchedAt={liveFetchedAt}/>)}</div>:<div className="empty">{scoresConfigured?'No matches are live right now. Upcoming fixtures are below.':'The football data connection is not configured.'}</div>}
     </section>
 
     <section id="fixtures" className="section"><div className="sectionTitle"><div>TODAY & UPCOMING FIXTURES</div><small>WORLDWIDE FOOTBALL · YOUR LOCAL TIME</small></div>
