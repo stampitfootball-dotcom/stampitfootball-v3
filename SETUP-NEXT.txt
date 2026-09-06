@@ -1,0 +1,13 @@
+STAMP IT FOOTBALL — NEXT STEPS
+
+1. Upload all files/folders from this package to GitHub.
+2. Commit changes.
+3. Wait for Vercel deployment.
+4. Create a free football-data.org API key.
+5. Add it in Vercel as FOOTBALL_DATA_API_KEY.
+6. Create a GNews API key for development/testing.
+7. Add it in Vercel as GNEWS_API_KEY.
+8. Redeploy.
+9. Before collecting real member passwords, connect production authentication.
+
+Do not put API keys directly into GitHub files.
