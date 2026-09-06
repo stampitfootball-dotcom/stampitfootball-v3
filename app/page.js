@@ -93,7 +93,7 @@ function Standings({selected,allLeagues,setSelected}){
 export default function Home(){
   const [liveMatches,setLiveMatches]=useState([]),[fixtures,setFixtures]=useState([]),[news,setNews]=useState([]),[auth,setAuth]=useState(false),[reason,setReason]=useState('Join Stamp It Football');
   const [scoresConfigured,setScoresConfigured]=useState(null),[liveLoading,setLiveLoading]=useState(true),[liveError,setLiveError]=useState(false),[newsConfigured,setNewsConfigured]=useState(false),[liveFetchedAt,setLiveFetchedAt]=useState(null);
-  const [allLeagues,setAllLeagues]=useState([]),[selectedLeague,setSelectedLeague]=useState({id:39,name:'Premier League',country:'England',season:2026,logo:'https://media.api-sports.io/football/leagues/39.png'}),[matchId,setMatchId]=useState(null);
+  const [allLeagues,setAllLeagues]=useState([]),[selectedLeague,setSelectedLeague]=useState({id:39,name:'Premier League',country:'England',season:2026,logo:'https://media.api-sports.io/football/leagues/39.png'}),[matchId,setMatchId]=useState(null),[menuOpen,setMenuOpen]=useState(false);
 
   const loadLive=async()=>{try{const r=await fetch('/api/live',{cache:'no-store'});if(!r.ok) throw new Error('live feed');const d=await r.json();setScoresConfigured(d.configured!==false);setLiveMatches(d.matches||[]);setLiveFetchedAt(d.fetchedAt||Date.now());setLiveError(false)}catch{setLiveError(true)}finally{setLiveLoading(false)}};
   const loadFixtures=()=>fetch('/api/fixtures?days=2',{cache:'no-store'}).then(r=>r.json()).then(d=>{setScoresConfigured(!!d.configured);setFixtures(d.matches||[])}).catch(()=>{});
@@ -104,9 +104,10 @@ export default function Home(){
   const recent=fixtures.filter(m=>finishedStatuses.has(m.status)).slice(-8).reverse();
 
   return <main>
-    <header><a className="brand" href="#top"><img src="/assets/logo.jpeg"/><span><b>STAMP IT</b><small>FOOTBALL</small></span></a>
-      <nav><a href="#scores">Scores</a><a href="#fixtures">Fixtures</a><a href="#tables">Tables</a><a href="#news">News</a><a href="#predictions">Predictions</a><a href="#drafts">Win Prizes</a><a href="#merch">Merch</a></nav>
-      <div className="auth"><button onClick={()=>gate('Welcome back')}>SIGN IN</button><button className="primary" onClick={()=>gate('Join Stamp It Football')}>JOIN FREE</button></div>
+    <header className={menuOpen?'menuOpen':''}><a className="brand" href="#top" onClick={()=>setMenuOpen(false)}><img src="/assets/logo.jpeg"/><span><b>STAMP IT</b><small>FOOTBALL</small></span></a>
+      <button className="menuToggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={()=>setMenuOpen(v=>!v)}><span></span><span></span><span></span></button>
+      <nav>{[['#scores','Scores'],['#fixtures','Fixtures'],['#tables','Tables'],['#news','News'],['#predictions','Predictions'],['#drafts','Win Prizes'],['#merch','Merch']].map(([href,label])=><a key={href} href={href} onClick={()=>setMenuOpen(false)}>{label}</a>)}</nav>
+      <div className="auth"><button onClick={()=>{setMenuOpen(false);gate('Welcome back')}}>SIGN IN</button><button className="primary" onClick={()=>{setMenuOpen(false);gate('Join Stamp It Football')}}>JOIN FREE</button></div>
     </header>
 
     <section id="top" className="heroLaunch"><img className="heroLogo" src="/assets/logo.jpeg"/><div><div className="eyebrow">STAMP IT FOOTBALL</div><h1>IT’S FOOTBALL,<br/><span>NOT SOCCER.</span></h1><p>Live scores, fixtures, tables, breaking news, predictions and prize drafts — one football home.</p><div className="cta"><a className="primary" href="#scores">LIVE FOOTBALL</a><a className="secondary" href="#drafts">WIN PRIZES</a></div></div></section>
