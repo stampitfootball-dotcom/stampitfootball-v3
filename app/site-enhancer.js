@@ -15,6 +15,15 @@ const languages=[
   {code:'hy',label:'Հայերեն',flag:'🇦🇲',dir:'ltr'}
 ];
 
+const menuTranslations={
+  en:{scores:'Live Scores',fixtures:'Fixtures',tables:'Tables',news:'News',predictions:'Predictions',fantasy:'Fantasy',login:'Login'},
+  ar:{scores:'النتائج المباشرة',fixtures:'المباريات',tables:'الجداول',news:'الأخبار',predictions:'التوقعات',fantasy:'فانتازي',login:'تسجيل الدخول'},
+  tr:{scores:'Canlı Skorlar',fixtures:'Fikstür',tables:'Puan Durumu',news:'Haberler',predictions:'Tahminler',fantasy:'Fantezi',login:'Giriş'},
+  it:{scores:'Risultati Live',fixtures:'Partite',tables:'Classifiche',news:'Notizie',predictions:'Pronostici',fantasy:'Fantasy',login:'Accedi'},
+  es:{scores:'Resultados en Vivo',fixtures:'Partidos',tables:'Clasificaciones',news:'Noticias',predictions:'Pronósticos',fantasy:'Fantasy',login:'Iniciar sesión'},
+  hy:{scores:'Ուղիղ հաշիվներ',fixtures:'Խաղեր',tables:'Աղյուսակներ',news:'Նորություններ',predictions:'Կանխատեսումներ',fantasy:'Ֆենթզի',login:'Մուտք'}
+};
+
 const countryLabels={
   'England':'🇬🇧 England','Spain':'🇪🇸 Spain','Italy':'🇮🇹 Italy','Germany':'🇩🇪 Germany','France':'🇫🇷 France',
   'Netherlands':'🇳🇱 Netherlands','Portugal':'🇵🇹 Portugal','Saudi-Arabia':'🇸🇦 Saudi Arabia','Saudi Arabia':'🇸🇦 Saudi Arabia',
@@ -60,6 +69,16 @@ function applyDirection(code){
   document.body?.classList.toggle('rtlSite',item.dir==='rtl');
 }
 
+function translateHeaderMenu(code){
+  const t=menuTranslations[code]||menuTranslations.en;
+  const labels=[t.scores,t.fixtures,t.tables,t.news,t.predictions,t.fantasy];
+  document.querySelectorAll('.dashboardHeader nav a').forEach((link,i)=>{if(labels[i])link.textContent=labels[i]});
+  const login=document.querySelector('.dashboardHeader .loginButton');
+  if(login)login.textContent=`♙ ${t.login}`;
+  const toggle=document.querySelector('.dashboardHeader .menuToggle');
+  if(toggle)toggle.setAttribute('aria-label',code==='ar'?'فتح القائمة':code==='tr'?'Menüyü aç':code==='it'?'Apri menu':code==='es'?'Abrir menú':code==='hy'?'Բացել ցանկը':'Open menu');
+}
+
 function setTranslateCookie(code){
   const hostname=window.location.hostname;
   if(code==='en'){
@@ -100,7 +119,18 @@ export default function SiteEnhancer(){
     const current=readLanguage();
     setLanguage(current);
     applyDirection(current);
+    translateHeaderMenu(current);
     setHeaderTarget(document.querySelector('.dashboardHeader'));
+
+    let menuRuns=0;
+    const menuTimer=setInterval(()=>{
+      translateHeaderMenu(current);
+      menuRuns+=1;
+      if(menuRuns>=12)clearInterval(menuTimer);
+    },500);
+    const toggle=document.querySelector('.dashboardHeader .menuToggle');
+    const onMenuOpen=()=>setTimeout(()=>translateHeaderMenu(readLanguage()),0);
+    toggle?.addEventListener('click',onMenuOpen);
 
     window.googleTranslateElementInit=()=>{
       if(window.google?.translate?.TranslateElement){
@@ -123,11 +153,14 @@ export default function SiteEnhancer(){
     }else if(window.google?.translate?.TranslateElement){
       window.googleTranslateElementInit?.();
     }
+
+    return()=>{clearInterval(menuTimer);toggle?.removeEventListener('click',onMenuOpen)};
   },[]);
 
   const changeLanguage=code=>{
     setLanguage(code);
     applyDirection(code);
+    translateHeaderMenu(code);
     try{localStorage.setItem('stampit-language',code)}catch{}
     setTranslateCookie(code);
     window.location.reload();
