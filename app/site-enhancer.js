@@ -5,8 +5,61 @@ import { useEffect, useState } from 'react';
 const SUPABASE_URL='https://eujaafpddvdtxqpeodsp.supabase.co';
 const SUPABASE_KEY='sb_publishable_bYwRjZVA31vDpmcb2CdeTA_gWPZq92R';
 
+const countryLabels={
+  'England':'🇬🇧 England',
+  'Spain':'🇪🇸 Spain',
+  'Italy':'🇮🇹 Italy',
+  'Germany':'🇩🇪 Germany',
+  'France':'🇫🇷 France',
+  'Netherlands':'🇳🇱 Netherlands',
+  'Portugal':'🇵🇹 Portugal',
+  'Saudi-Arabia':'🇸🇦 Saudi Arabia',
+  'Saudi Arabia':'🇸🇦 Saudi Arabia',
+  'Turkey':'🇹🇷 Turkey',
+  'USA':'🇺🇸 USA',
+  'United States':'🇺🇸 USA',
+  'Belgium':'🇧🇪 Belgium',
+  'Scotland':'🏴 Scotland',
+  'Greece':'🇬🇷 Greece',
+  'Brazil':'🇧🇷 Brazil',
+  'Argentina':'🇦🇷 Argentina',
+  'Mexico':'🇲🇽 Mexico',
+  'World':'🌐 UEFA / WORLD'
+};
+const countryOrder=['England','Spain','Italy','Germany','France','World','Netherlands','Portugal','Saudi-Arabia','Saudi Arabia','Turkey','USA','United States'];
+
+function decorateFootballBrowsers(){
+  document.querySelectorAll('.countryScroller').forEach(scroller=>{
+    const buttons=[...scroller.querySelectorAll('button')];
+    buttons.forEach(btn=>{
+      if(!btn.dataset.countryRaw) btn.dataset.countryRaw=btn.textContent.trim();
+      const raw=btn.dataset.countryRaw;
+      btn.textContent=countryLabels[raw]||raw;
+    });
+    buttons.sort((a,b)=>{
+      const ar=a.dataset.countryRaw||'',br=b.dataset.countryRaw||'';
+      const ai=countryOrder.indexOf(ar),bi=countryOrder.indexOf(br);
+      if(ai>=0||bi>=0)return(ai<0?999:ai)-(bi<0?999:bi);
+      return ar.localeCompare(br);
+    }).forEach(btn=>scroller.appendChild(btn));
+  });
+  document.querySelectorAll('.leagueScroller button').forEach(btn=>{
+    if(btn.dataset.navDecorated)return;
+    const txt=btn.textContent.trim();
+    if(txt==='ALL WORLD')btn.textContent='ALL UEFA / WORLD';
+    btn.dataset.navDecorated='1';
+  });
+}
+
 export default function SiteEnhancer(){
   const[picks,setPicks]=useState([]),[loading,setLoading]=useState(true);
+
+  useEffect(()=>{
+    decorateFootballBrowsers();
+    const observer=new MutationObserver(()=>decorateFootballBrowsers());
+    observer.observe(document.body,{childList:true,subtree:true});
+    return()=>observer.disconnect();
+  },[]);
 
   useEffect(()=>{
     let active=true;
