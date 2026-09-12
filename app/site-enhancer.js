@@ -47,6 +47,50 @@ export default function SiteEnhancer(){
     return()=>listeners.forEach(([button,fn])=>button.removeEventListener('click',fn,true));
   },[]);
 
+  useEffect(()=>{
+    const fixtures=document.getElementById('fixtures');
+    if(!fixtures)return;
+    let expanded=false;
+    let button=null;
+    let frame=null;
+
+    const apply=()=>{
+      frame=null;
+      const groups=[...fixtures.querySelectorAll(':scope > .leagueMatchGroups')];
+      const upcomingGroup=groups[0];
+      if(!upcomingGroup)return;
+      const cards=[...upcomingGroup.querySelectorAll('.match')];
+      const recentTitle=fixtures.querySelector(':scope > .subTitle');
+      const recentGroups=groups.slice(1);
+
+      cards.forEach((card,index)=>{card.style.display=expanded||index<4?'':'none'});
+      [...upcomingGroup.querySelectorAll('.leagueBlock')].forEach(block=>{
+        const blockCards=[...block.querySelectorAll('.match')];
+        block.style.display=blockCards.some(card=>card.style.display!=='none')?'':'none';
+      });
+      if(recentTitle)recentTitle.style.display=expanded?'':'none';
+      recentGroups.forEach(group=>{group.style.display=expanded?'':'none'});
+
+      const hidden=Math.max(0,cards.length-4)+recentGroups.reduce((n,g)=>n+g.querySelectorAll('.match').length,0);
+      if(!button){
+        button=document.createElement('button');
+        button.type='button';
+        button.className='primary fixtureShowMore';
+        button.style.cssText='display:block;margin:22px auto 0;min-width:220px;';
+        button.addEventListener('click',()=>{expanded=!expanded;apply();});
+        upcomingGroup.insertAdjacentElement('afterend',button);
+      }
+      button.style.display=(cards.length>4||recentGroups.length)?'block':'none';
+      button.textContent=expanded?'SHOW LESS':'SHOW MORE FIXTURES'+(hidden?` (${hidden})`:'');
+    };
+
+    const schedule=()=>{if(frame===null)frame=requestAnimationFrame(apply)};
+    const observer=new MutationObserver(schedule);
+    observer.observe(fixtures,{childList:true,subtree:true});
+    apply();
+    return()=>{observer.disconnect();if(frame!==null)cancelAnimationFrame(frame);if(button)button.remove()};
+  },[]);
+
   return <>
     <section id="free-picks-live" className="section picksEnhancer">
       <div className="sectionTitle"><div><span className="liveDot"></span> STAMP IT FREE PICKS</div><small>FREE FOR EVERYONE · UPDATED FROM OUR PICKS DESK</small></div>
