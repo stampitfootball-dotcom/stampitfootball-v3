@@ -10,7 +10,9 @@ const languages=[
   {code:'en',label:'English',flag:'🇬🇧',dir:'ltr'},
   {code:'ar',label:'العربية',flag:'🇸🇦',dir:'rtl'},
   {code:'tr',label:'Türkçe',flag:'🇹🇷',dir:'ltr'},
-  {code:'it',label:'Italiano',flag:'🇮🇹',dir:'ltr'}
+  {code:'it',label:'Italiano',flag:'🇮🇹',dir:'ltr'},
+  {code:'es',label:'Español',flag:'🇪🇸',dir:'ltr'},
+  {code:'hy',label:'Հայերեն',flag:'🇦🇲',dir:'ltr'}
 ];
 
 const countryLabels={
@@ -105,7 +107,7 @@ export default function SiteEnhancer(){
         try{
           new window.google.translate.TranslateElement({
             pageLanguage:'en',
-            includedLanguages:'ar,en,it,tr',
+            includedLanguages:'ar,en,es,hy,it,tr',
             autoDisplay:false
           },'google_translate_element');
         }catch{}
@@ -142,15 +144,15 @@ export default function SiteEnhancer(){
   return <>
     <style>{`
       .stampLanguagePicker{position:absolute;right:116px;top:7px;z-index:80;display:flex;align-items:center;gap:5px;background:#071a17;border:1px solid #28534a;border-radius:7px;padding:3px 6px;color:#dce8e4;font-size:11px;box-shadow:0 4px 14px #0004}
-      .stampLanguagePicker select{appearance:auto;background:transparent;border:0;outline:0;color:#e9f2ef;font-size:11px;font-weight:800;cursor:pointer;max-width:112px}
+      .stampLanguagePicker select{appearance:auto;background:transparent;border:0;outline:0;color:#e9f2ef;font-size:11px;font-weight:800;cursor:pointer;max-width:120px}
       .stampLanguagePicker option{background:#071a17;color:#fff}
       #google_translate_element,.goog-te-banner-frame,.goog-te-balloon-frame{display:none!important}
       body{top:0!important}
       html[dir="rtl"] .scoreTeam.home{justify-content:flex-start;text-align:left}
       html[dir="rtl"] .scoreTeam.away{justify-content:flex-end;text-align:right}
       html[dir="rtl"] .competitionSidebar{border-right:0;border-left:1px solid #19433c}
-      @media(max-width:760px){.stampLanguagePicker{right:67px;top:12px;padding:2px 5px}.stampLanguagePicker select{max-width:88px;font-size:10px}.stampLanguagePicker>span{display:none}}
-      @media(max-width:390px){.stampLanguagePicker{right:62px}.stampLanguagePicker select{max-width:72px}}
+      @media(max-width:760px){.stampLanguagePicker{right:67px;top:12px;padding:2px 5px}.stampLanguagePicker select{max-width:94px;font-size:10px}.stampLanguagePicker>span{display:none}}
+      @media(max-width:390px){.stampLanguagePicker{right:62px}.stampLanguagePicker select{max-width:80px}}
     `}</style>
     {headerTarget&&createPortal(<LanguageSelector language={language} onChange={changeLanguage}/>,headerTarget)}
     <div id="google_translate_element" aria-hidden="true"></div>
