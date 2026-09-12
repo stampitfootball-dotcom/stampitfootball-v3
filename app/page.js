@@ -7,7 +7,7 @@ const finishedStatuses=new Set(['FT','AET','PEN']);
 const priorityLeagueIds=[39,140,135,78,61,88,40,136,2];
 const quickLeagues=[['Premier League',39],['La Liga',140],['Serie A',135],['Bundesliga',78],['Ligue 1',61],['Eredivisie',88],['Championship',40],['Serie B',136],['Champions League',2]];
 const preferredCountries=['England','Spain','Italy','Germany','France','Netherlands','Portugal','Saudi-Arabia','Turkey','USA','World'];
-const countryFlags={England:'🏴',Spain:'🇪🇸',Italy:'🇮🇹',Germany:'🇩🇪',France:'🇫🇷',Netherlands:'🇳🇱',Portugal:'🇵🇹','Saudi-Arabia':'🇸🇦',Turkey:'🇹🇷',USA:'🇺🇸',Belgium:'🇧🇪',Scotland:'🏴',Greece:'🇬🇷',Brazil:'🇧🇷',Argentina:'🇦🇷',Mexico:'🇲🇽',World:'🌐'};
+const countryFlags={England:'🇬🇧',Spain:'🇪🇸',Italy:'🇮🇹',Germany:'🇩🇪',France:'🇫🇷',Netherlands:'🇳🇱',Portugal:'🇵🇹','Saudi-Arabia':'🇸🇦',Turkey:'🇹🇷',USA:'🇺🇸',Belgium:'🇧🇪',Scotland:'🏴',Greece:'🇬🇷',Brazil:'🇧🇷',Argentina:'🇦🇷',Mexico:'🇲🇽',World:'🌐'};
 
 const priority=id=>{const i=priorityLeagueIds.indexOf(Number(id));return i<0?999:i};
 const sortMatches=list=>[...list].sort((a,b)=>priority(a.leagueId)-priority(b.leagueId)||new Date(a.utcDate||0)-new Date(b.utcDate||0));
@@ -16,6 +16,7 @@ const countryLeagues=(all,country)=>uniqueLeagues(all.filter(l=>l.country===coun
 const orderedCountries=all=>[...new Set(all.map(l=>l.country).filter(Boolean))].sort((a,b)=>{const ai=preferredCountries.indexOf(a),bi=preferredCountries.indexOf(b);if(ai>=0||bi>=0)return(ai<0?999:ai)-(bi<0?999:bi);return a.localeCompare(b)});
 const filterMatches=(list,country,league)=>sortMatches(list.filter(m=>(!country||m.country===country)&&(league==='all'||!league||Number(m.leagueId)===Number(league))));
 const countryLabel=c=>c==='World'?'UEFA / WORLD':c?.replace('Saudi-Arabia','Saudi Arabia');
+const countryWithFlag=c=>`${countryFlags[c]||'⚽'} ${countryLabel(c)}`;
 function articleTime(v){if(!v)return'NOW';try{return new Date(v).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{return'NOW'}}
 
 function CompetitionSidebar({allLeagues,country,setCountry,leagueId,setLeagueId}){
@@ -26,7 +27,7 @@ function CompetitionSidebar({allLeagues,country,setCountry,leagueId,setLeagueId}
     <div className="sideTabs"><button className="active">Competitions</button><button>☆ Favourites</button></div>
     <button className={`sideAll ${!country?'active':''}`} onClick={()=>chooseCountry('')}>⚽ All Football</button>
     <div className="countryList">{countries.map(c=><div className="countryGroup" key={c}>
-      <button className={`countryButton ${country===c?'active':''}`} onClick={()=>chooseCountry(c)}><span>{countryFlags[c]||'⚽'} {countryLabel(c)}</span><b>{country===c?'⌃':'⌄'}</b></button>
+      <button className={`countryButton ${country===c?'active':''}`} onClick={()=>chooseCountry(c)}><span>{countryWithFlag(c)}</span><b>{country===c?'⌃':'⌄'}</b></button>
       {country===c&&<div className="sideLeagues"><button className={leagueId==='all'?'active':''} onClick={()=>setLeagueId('all')}>All {countryLabel(c)}</button>{leagues.map(l=><button key={l.id} className={Number(leagueId)===Number(l.id)?'active':''} onClick={()=>setLeagueId(l.id)}>{l.logo&&<img src={l.logo} alt=""/>}{l.name}</button>)}</div>}
     </div>)}</div>
   </aside>
@@ -64,13 +65,15 @@ function MatchModal({id,close}){
 }
 
 function Standings({selected,allLeagues,setSelected}){
-  const[groups,setGroups]=useState([]),[loading,setLoading]=useState(false),[query,setQuery]=useState('');
+  const[groups,setGroups]=useState([]),[loading,setLoading]=useState(false),[query,setQuery]=useState(''),[tableCountry,setTableCountry]=useState('');
   useEffect(()=>{if(!selected?.id||!selected?.season)return;setLoading(true);fetch(`/api/standings?league=${selected.id}&season=${selected.season}`,{cache:'no-store'}).then(r=>r.json()).then(d=>setGroups(d.groups||[])).catch(()=>setGroups([])).finally(()=>setLoading(false))},[selected?.id,selected?.season]);
   const searchResults=query.trim().length>=2?allLeagues.filter(l=>`${l.name} ${l.country}`.toLowerCase().includes(query.toLowerCase())).slice(0,20):[];
+  const tableLeagueOptions=tableCountry?countryLeagues(allLeagues,tableCountry):[];
   return <div className="standingsDashboard">
-    <div className="leagueTabs">{quickLeagues.map(([name,id])=><button className={selected?.id===id?'active':''} onClick={()=>{const found=allLeagues.find(l=>Number(l.id)===Number(id));if(found)setSelected(found)}} key={id}>{name}</button>)}</div>
-    <div className="leagueFinder"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search league or country…"/>{searchResults.length>0&&<div className="leagueResults">{searchResults.map(l=><button key={`${l.id}-${l.season}`} onClick={()=>{setSelected(l);setQuery('')}}><img src={l.logo||l.flag} alt=""/><span><b>{l.name}</b><small>{countryLabel(l.country)} · {l.season}</small></span></button>)}</div>}</div>
-    <div className="tableCard wideTable"><div className="tableTitle"><div>{selected?.logo&&<img src={selected.logo} alt=""/>}<span><h3>{selected?.name||'League Table'}</h3><small>{countryLabel(selected?.country)} · {selected?.season}</small></span></div><b>{loading?'UPDATING…':'LIVE TABLE'}</b></div>{loading?<div className="empty compact">Loading standings…</div>:groups.length?groups.map((g,gi)=><div key={gi} className="standGroup">{groups.length>1&&<h4>{g.name}</h4>}<div className="tableHead full"><span>POS</span><span>CLUB</span><span>PL</span><span>W</span><span>D</span><span>L</span><span>GD</span><span>PTS</span></div>{g.rows.map(r=><div className="tableRow full" key={r.teamId}><span>{r.rank}</span><span className="clubCell"><img src={r.logo}/><b>{r.team}</b></span><span>{r.played}</span><span>{r.win}</span><span>{r.draw}</span><span>{r.lose}</span><span>{r.goalsDiff>0?`+${r.goalsDiff}`:r.goalsDiff}</span><strong>{r.points}</strong></div>)}</div>):<div className="empty compact">Standings are not available for this competition right now.</div>}</div>
+    <div className="fixtureControls"><select value={tableCountry} onChange={e=>setTableCountry(e.target.value)}><option value="">🌍 All countries</option>{orderedCountries(allLeagues).map(c=><option key={c} value={c}>{countryWithFlag(c)}</option>)}</select><select value={tableCountry&&selected?.country===tableCountry?selected?.id||'':''} onChange={e=>{const found=allLeagues.find(l=>Number(l.id)===Number(e.target.value));if(found)setSelected(found)}} disabled={!tableCountry}><option value="">{tableCountry?'Choose competition':'Choose a country first'}</option>{tableLeagueOptions.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}</select></div>
+    <div className="leagueTabs">{quickLeagues.map(([name,id])=><button className={selected?.id===id?'active':''} onClick={()=>{const found=allLeagues.find(l=>Number(l.id)===Number(id));if(found){setSelected(found);setTableCountry(found.country||'')}}} key={id}>{name}</button>)}</div>
+    <div className="leagueFinder"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search league or country…"/>{searchResults.length>0&&<div className="leagueResults">{searchResults.map(l=><button key={`${l.id}-${l.season}`} onClick={()=>{setSelected(l);setTableCountry(l.country||'');setQuery('')}}><img src={l.logo||l.flag} alt=""/><span><b>{l.name}</b><small>{countryWithFlag(l.country)} · {l.season}</small></span></button>)}</div>}</div>
+    <div className="tableCard wideTable"><div className="tableTitle"><div>{selected?.logo&&<img src={selected.logo} alt=""/>}<span><h3>{selected?.name||'League Table'}</h3><small>{selected?.country?countryWithFlag(selected.country):''} · {selected?.season}</small></span></div><b>{loading?'UPDATING…':'LIVE TABLE'}</b></div>{loading?<div className="empty compact">Loading standings…</div>:groups.length?groups.map((g,gi)=><div key={gi} className="standGroup">{groups.length>1&&<h4>{g.name}</h4>}<div className="tableHead full"><span>POS</span><span>CLUB</span><span>PL</span><span>W</span><span>D</span><span>L</span><span>GD</span><span>PTS</span></div>{g.rows.map(r=><div className="tableRow full" key={r.teamId}><span>{r.rank}</span><span className="clubCell"><img src={r.logo}/><b>{r.team}</b></span><span>{r.played}</span><span>{r.win}</span><span>{r.draw}</span><span>{r.lose}</span><span>{r.goalsDiff>0?`+${r.goalsDiff}`:r.goalsDiff}</span><strong>{r.points}</strong></div>)}</div>):<div className="empty compact">Standings are not available for this competition right now.</div>}</div>
   </div>
 }
 
@@ -93,7 +96,7 @@ export default function Home(){
   return <main className="dashboardSite">
     <header className={`dashboardHeader ${menuOpen?'menuOpen':''}`}>
       <a className="brand" href="#scores" onClick={()=>setMenuOpen(false)}><img src="/assets/logo.jpeg"/><span><b>STAMP IT</b><small>FOOTBALL</small></span></a>
-      <div className="headerSlogan">IT’S FOOTBALL, <span>NOT SOCCER.</span></div>
+      <div className="headerSlogan">IT’S FOOTBALL, <span>NOT SOCCER.</span><small style={{display:'block',marginTop:6,color:'#f7c84b',fontSize:12,fontWeight:1000,letterSpacing:.35,textAlign:'center',textShadow:'0 0 12px rgba(247,200,75,.35)'}}>HOME OF FOOTBALL: EVERYTHING YOU NEED TO KNOW ABOUT FOOTBALL.</small></div>
       <nav>{[['#scores','Live Scores'],['#fixtures','Fixtures'],['#tables','Tables'],['#news','News'],['#predictions','Predictions'],['#drafts','Fantasy']].map(([href,label])=><a key={href} href={href} onClick={()=>setMenuOpen(false)}>{label}</a>)}</nav>
       <div className="socialMini"><span>◎</span><span>♪</span><span>▶</span><span>f</span><b>@stampitfootball</b></div>
       <button className="loginButton" onClick={()=>gate('Welcome back')}>♙ Login</button>
@@ -109,7 +112,7 @@ export default function Home(){
       </div>
     </section>
 
-    <section id="fixtures" className="dashboardSection"><div className="sectionTitle"><div>Fixtures</div><small>UPCOMING MATCHES · YOUR LOCAL TIME</small></div><div className="fixtureControls"><select value={fixtureCountry} onChange={e=>{setFixtureCountry(e.target.value);setFixtureLeague('all')}}><option value="">All countries</option>{orderedCountries(allLeagues).map(c=><option key={c} value={c}>{countryLabel(c)}</option>)}</select><select value={fixtureLeague} onChange={e=>setFixtureLeague(e.target.value)}><option value="all">All competitions</option>{fixtureCountry&&countryLeagues(allLeagues,fixtureCountry).map(l=><option key={l.id} value={l.id}>{l.name}</option>)}</select></div><MatchGroups matches={visibleUpcoming} onOpen={setMatchId} emptyText="No upcoming fixtures in this selection for the current two-day window."/>{(shownUpcoming.length>18||shownRecent.length>0)&&<button className="viewAllButton" onClick={()=>setFixturesExpanded(v=>!v)}>{fixturesExpanded?'Show Less Fixtures':'View More Fixtures'} ›</button>}{fixturesExpanded&&shownRecent.length>0&&<><div className="subTitle">LATEST RESULTS</div><MatchGroups matches={shownRecent} onOpen={setMatchId} emptyText=""/></>}</section>
+    <section id="fixtures" className="dashboardSection"><div className="sectionTitle"><div>Fixtures</div><small>UPCOMING MATCHES · YOUR LOCAL TIME</small></div><div className="fixtureControls"><select value={fixtureCountry} onChange={e=>{setFixtureCountry(e.target.value);setFixtureLeague('all')}}><option value="">🌍 All countries</option>{orderedCountries(allLeagues).map(c=><option key={c} value={c}>{countryWithFlag(c)}</option>)}</select><select value={fixtureLeague} onChange={e=>setFixtureLeague(e.target.value)}><option value="all">All competitions</option>{fixtureCountry&&countryLeagues(allLeagues,fixtureCountry).map(l=><option key={l.id} value={l.id}>{l.name}</option>)}</select></div><MatchGroups matches={visibleUpcoming} onOpen={setMatchId} emptyText="No upcoming fixtures in this selection for the current two-day window."/>{(shownUpcoming.length>18||shownRecent.length>0)&&<button className="viewAllButton" onClick={()=>setFixturesExpanded(v=>!v)}>{fixturesExpanded?'Show Less Fixtures':'View More Fixtures'} ›</button>}{fixturesExpanded&&shownRecent.length>0&&<><div className="subTitle">LATEST RESULTS</div><MatchGroups matches={shownRecent} onOpen={setMatchId} emptyText=""/></>}</section>
 
     <section id="tables" className="dashboardSection"><div className="sectionTitle"><div>Tables</div><small>LEAGUE STANDINGS</small></div><Standings selected={selectedLeague} allLeagues={allLeagues} setSelected={setSelectedLeague}/></section>
 
