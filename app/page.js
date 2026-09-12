@@ -5,12 +5,13 @@ import './score-hub-v2.css';
 
 const liveStatuses=new Set(['1H','HT','2H','ET','BT','P','SUSP','INT','LIVE']);
 const finishedStatuses=new Set(['FT','AET','PEN']);
-const priorityLeagueIds=[39,140,135,78,61,88,2,3,848,40,136];
-const preferredCountries=['England','Spain','Italy','Germany','France','Netherlands','World','Portugal','Saudi-Arabia','Turkey','USA'];
+const priorityLeagueIds=[39,140,135,78,61,88,2,3,848,40,136,94,307,203,253,144,179];
+const preferredCountries=['England','Spain','Italy','Germany','France','Netherlands','World','Portugal','Saudi-Arabia','Turkey','USA','Belgium','Scotland'];
 const countryFlags={England:'🇬🇧',Spain:'🇪🇸',Italy:'🇮🇹',Germany:'🇩🇪',France:'🇫🇷',Netherlands:'🇳🇱',Portugal:'🇵🇹','Saudi-Arabia':'🇸🇦',Turkey:'🇹🇷',USA:'🇺🇸',Belgium:'🇧🇪',Scotland:'🏴',Greece:'🇬🇷',Brazil:'🇧🇷',Argentina:'🇦🇷',Mexico:'🇲🇽',World:'🌐'};
 
 const priority=id=>{const i=priorityLeagueIds.indexOf(Number(id));return i<0?999:i};
-const sortMatches=list=>[...list].sort((a,b)=>priority(a.leagueId)-priority(b.leagueId)||new Date(a.utcDate||0)-new Date(b.utcDate||0));
+const countryPriority=country=>{const i=preferredCountries.indexOf(country);return i<0?999:i};
+const sortMatches=list=>[...list].sort((a,b)=>priority(a.leagueId)-priority(b.leagueId)||countryPriority(a.country)-countryPriority(b.country)||new Date(a.utcDate||0)-new Date(b.utcDate||0));
 const uniqueLeagues=list=>{const seen=new Set();return list.filter(l=>{const k=String(l.id);if(seen.has(k))return false;seen.add(k);return true})};
 const countryLeagues=(all,country)=>uniqueLeagues(all.filter(l=>l.country===country)).sort((a,b)=>priority(a.id)-priority(b.id)||a.name.localeCompare(b.name));
 const orderedCountries=all=>[...new Set(all.map(l=>l.country).filter(Boolean))].sort((a,b)=>{const ai=preferredCountries.indexOf(a),bi=preferredCountries.indexOf(b);if(ai>=0||bi>=0)return(ai<0?999:ai)-(bi<0?999:bi);return a.localeCompare(b)});
@@ -24,7 +25,7 @@ function CompetitionSidebar({allLeagues,country,leagueId,onCountry,onLeague}){
   const leagues=useMemo(()=>country?countryLeagues(allLeagues,country):[],[allLeagues,country]);
   return <aside className="competitionSidebar v2Sidebar">
     <div className="sidebarHeading"><span>COMPETITIONS</span><small>COUNTRIES & LEAGUES</small></div>
-    <button className={`sideAll ${!country?'active':''}`} onClick={()=>onCountry('')}>⚽ All Football</button>
+    <button className={`sideAll ${!country?'active':''}`} onClick={()=>onCountry('')}>🌍 All Competitions</button>
     <div className="countryList">{countries.map(c=><div className="countryGroup" key={c}>
       <button className={`countryButton ${country===c?'active':''}`} onClick={()=>onCountry(c)}><span>{countryWithFlag(c)}</span><b>{country===c?'−':'+'}</b></button>
       {country===c&&<div className="sideLeagues">
@@ -94,7 +95,7 @@ export default function Home(){
   const pickCountry=c=>{setHubCountry(c);setHubLeague('all');if(c){const first=countryLeagues(allLeagues,c)[0];if(first)setSelectedLeague(first)}};
   const showTable=id=>{const found=allLeagues.find(l=>Number(l.id)===Number(id));if(found){setHubCountry(found.country||'');setHubLeague(found.id);setSelectedLeague(found)}setHubView('tables');document.getElementById('football')?.scrollIntoView({behavior:'smooth'})};
   const navHub=view=>{setHubView(view);setMenuOpen(false);setTimeout(()=>document.getElementById('football')?.scrollIntoView({behavior:'smooth'}),0)};
-  const activeTitle=hubCountry?(hubLeague==='all'?countryLabel(hubCountry):(allLeagues.find(l=>Number(l.id)===Number(hubLeague))?.name||countryLabel(hubCountry))):'All Football';
+  const activeTitle=hubCountry?(hubLeague==='all'?countryLabel(hubCountry):(allLeagues.find(l=>Number(l.id)===Number(hubLeague))?.name||countryLabel(hubCountry))):'All Competitions';
 
   return <main className="dashboardSite">
     <header className={`dashboardHeader compactHeader ${menuOpen?'menuOpen':''}`}>
