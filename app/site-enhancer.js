@@ -79,6 +79,30 @@ function translateHeaderMenu(code){
   if(toggle)toggle.setAttribute('aria-label',code==='ar'?'فتح القائمة':code==='tr'?'Menüyü aç':code==='it'?'Apri menu':code==='es'?'Abrir menú':code==='hy'?'Բացել ցանկը':'Open menu');
 }
 
+function hideTranslateChrome(){
+  document.documentElement.style.setProperty('top','0px','important');
+  if(document.body)document.body.style.setProperty('top','0px','important');
+  const selectors=[
+    '.goog-te-banner-frame',
+    '.goog-te-banner-frame.skiptranslate',
+    'iframe.goog-te-banner-frame',
+    'iframe.skiptranslate',
+    '.VIpgJd-ZVi9od-ORHb-OEVmcd',
+    '.VIpgJd-ZVi9od-ORHb-OEVmcd.skiptranslate',
+    'iframe.VIpgJd-ZVi9od-ORHb-OEVmcd',
+    '.goog-te-balloon-frame',
+    '.goog-tooltip',
+    '#goog-gt-tt'
+  ];
+  document.querySelectorAll(selectors.join(',')).forEach(el=>{
+    el.style.setProperty('display','none','important');
+    el.style.setProperty('visibility','hidden','important');
+    el.style.setProperty('height','0','important');
+    el.style.setProperty('width','0','important');
+    el.style.setProperty('border','0','important');
+  });
+}
+
 function setTranslateCookie(code){
   const hostname=window.location.hostname;
   if(code==='en'){
@@ -121,12 +145,14 @@ export default function SiteEnhancer(){
     applyDirection(current);
     translateHeaderMenu(current);
     setHeaderTarget(document.querySelector('.dashboardHeader'));
+    hideTranslateChrome();
 
     let menuRuns=0;
     const menuTimer=setInterval(()=>{
       translateHeaderMenu(current);
+      hideTranslateChrome();
       menuRuns+=1;
-      if(menuRuns>=12)clearInterval(menuTimer);
+      if(menuRuns>=30)clearInterval(menuTimer);
     },500);
     const toggle=document.querySelector('.dashboardHeader .menuToggle');
     const onMenuOpen=()=>setTimeout(()=>translateHeaderMenu(readLanguage()),0);
@@ -140,6 +166,9 @@ export default function SiteEnhancer(){
             includedLanguages:'ar,en,es,hy,it,tr',
             autoDisplay:false
           },'google_translate_element');
+          setTimeout(hideTranslateChrome,50);
+          setTimeout(hideTranslateChrome,500);
+          setTimeout(hideTranslateChrome,1500);
         }catch{}
       }
     };
@@ -179,8 +208,19 @@ export default function SiteEnhancer(){
       .stampLanguagePicker{position:absolute;right:116px;top:7px;z-index:80;display:flex;align-items:center;gap:5px;background:#071a17;border:1px solid #28534a;border-radius:7px;padding:3px 6px;color:#dce8e4;font-size:11px;box-shadow:0 4px 14px #0004}
       .stampLanguagePicker select{appearance:auto;background:transparent;border:0;outline:0;color:#e9f2ef;font-size:11px;font-weight:800;cursor:pointer;max-width:120px}
       .stampLanguagePicker option{background:#071a17;color:#fff}
-      #google_translate_element,.goog-te-banner-frame,.goog-te-balloon-frame{display:none!important}
-      body{top:0!important}
+      #google_translate_element,
+      .goog-te-banner-frame,
+      .goog-te-banner-frame.skiptranslate,
+      iframe.goog-te-banner-frame,
+      iframe.skiptranslate,
+      .VIpgJd-ZVi9od-ORHb-OEVmcd,
+      .VIpgJd-ZVi9od-ORHb-OEVmcd.skiptranslate,
+      iframe.VIpgJd-ZVi9od-ORHb-OEVmcd,
+      .goog-te-balloon-frame,
+      .goog-tooltip,
+      #goog-gt-tt{display:none!important;visibility:hidden!important;height:0!important;width:0!important;border:0!important}
+      html,body{top:0!important}
+      body>.skiptranslate{display:none!important;height:0!important;overflow:hidden!important}
       html[dir="rtl"] .scoreTeam.home{justify-content:flex-start;text-align:left}
       html[dir="rtl"] .scoreTeam.away{justify-content:flex-end;text-align:right}
       html[dir="rtl"] .competitionSidebar{border-right:0;border-left:1px solid #19433c}
