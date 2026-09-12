@@ -5,13 +5,20 @@ import './score-hub-v2.css';
 
 const liveStatuses=new Set(['1H','HT','2H','ET','BT','P','SUSP','INT','LIVE']);
 const finishedStatuses=new Set(['FT','AET','PEN']);
-const priorityLeagueIds=[39,140,135,78,61,88,2,3,848,40,136,94,307,203,253,144,179];
-const preferredCountries=['England','Spain','Italy','Germany','France','Netherlands','World','Portugal','Saudi-Arabia','Turkey','USA','Belgium','Scotland'];
+
+// Featured competition order: top divisions first, then UEFA, then second tiers.
+const topDivisionLeagueIds=[39,140,135,78,61,88,94,203];
+const uefaLeagueIds=[2,3,848];
+const secondTierLeagueIds=[40,141,136,79,62,89,95,204];
+const featuredLeagueIds=[...topDivisionLeagueIds,...uefaLeagueIds,...secondTierLeagueIds];
+const priorityLeagueIds=featuredLeagueIds;
+
+const preferredCountries=['England','Spain','Italy','Germany','France','Netherlands','Portugal','Turkey','World','Saudi-Arabia','USA','Belgium','Scotland'];
 const countryFlags={England:'🇬🇧',Spain:'🇪🇸',Italy:'🇮🇹',Germany:'🇩🇪',France:'🇫🇷',Netherlands:'🇳🇱',Portugal:'🇵🇹','Saudi-Arabia':'🇸🇦',Turkey:'🇹🇷',USA:'🇺🇸',Belgium:'🇧🇪',Scotland:'🏴',Greece:'🇬🇷',Brazil:'🇧🇷',Argentina:'🇦🇷',Mexico:'🇲🇽',World:'🌐'};
 
 const priority=id=>{const i=priorityLeagueIds.indexOf(Number(id));return i<0?999:i};
-const countryPriority=country=>{const i=preferredCountries.indexOf(country);return i<0?999:i};
-const sortMatches=list=>[...list].sort((a,b)=>priority(a.leagueId)-priority(b.leagueId)||countryPriority(a.country)-countryPriority(b.country)||new Date(a.utcDate||0)-new Date(b.utcDate||0));
+const isFeaturedLeague=id=>featuredLeagueIds.includes(Number(id));
+const sortMatches=list=>[...list].sort((a,b)=>priority(a.leagueId)-priority(b.leagueId)||new Date(a.utcDate||0)-new Date(b.utcDate||0)||String(a.competition||'').localeCompare(String(b.competition||'')));
 const uniqueLeagues=list=>{const seen=new Set();return list.filter(l=>{const k=String(l.id);if(seen.has(k))return false;seen.add(k);return true})};
 const countryLeagues=(all,country)=>uniqueLeagues(all.filter(l=>l.country===country)).sort((a,b)=>priority(a.id)-priority(b.id)||a.name.localeCompare(b.name));
 const orderedCountries=all=>[...new Set(all.map(l=>l.country).filter(Boolean))].sort((a,b)=>{const ai=preferredCountries.indexOf(a),bi=preferredCountries.indexOf(b);if(ai>=0||bi>=0)return(ai<0?999:ai)-(bi<0?999:bi);return a.localeCompare(b)});
@@ -89,7 +96,9 @@ export default function Home(){
   const shownLive=filterMatches(liveMatches,hubCountry,hubLeague);
   const shownUpcoming=filterMatches(upcoming,hubCountry,hubLeague);
   const shownRecent=filterMatches(recent,hubCountry,hubLeague);
-  const visibleLive=liveExpanded?shownLive:shownLive.slice(0,24);
+  const featuredLive=hubCountry||hubLeague!=='all'?shownLive:shownLive.filter(m=>isFeaturedLeague(m.leagueId));
+  const visibleFeaturedLive=liveExpanded?featuredLive:featuredLive.slice(0,24);
+  const visibleAllLive=liveExpanded?shownLive:shownLive.slice(0,40);
   const visibleUpcoming=fixturesExpanded?shownUpcoming:shownUpcoming.slice(0,24);
   const pickLeague=id=>{setHubLeague(id);if(id!=='all'){const found=allLeagues.find(l=>Number(l.id)===Number(id));if(found)setSelectedLeague(found)}};
   const pickCountry=c=>{setHubCountry(c);setHubLeague('all');if(c){const first=countryLeagues(allLeagues,c)[0];if(first)setSelectedLeague(first)}};
@@ -101,7 +110,7 @@ export default function Home(){
     <header className={`dashboardHeader compactHeader ${menuOpen?'menuOpen':''}`}>
       <a className="brand" href="#football" onClick={()=>setMenuOpen(false)}><img src="/assets/logo.jpeg"/><span><b>STAMP IT</b><small>FOOTBALL</small></span></a>
       <div className="headerSlogan">IT’S FOOTBALL, <span>NOT SOCCER.</span></div>
-      <nav><a href="#football" className={hubView==='scores'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('scores')}}>Live Scores</a><a href="#football" className={hubView==='fixtures'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('fixtures')}}>Fixtures</a><a href="#football" className={hubView==='tables'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('tables')}}>Tables</a><a href="#news" onClick={()=>setMenuOpen(false)}>News</a><a href="#predictions" onClick={()=>setMenuOpen(false)}>Predictions</a><a href="#drafts" onClick={()=>setMenuOpen(false)}>Fantasy</a></nav>
+      <nav><a href="#football" className={hubView==='scores'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('scores')}}>Scores</a><a href="#football" className={hubView==='live'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('live')}}>Live Now</a><a href="#football" className={hubView==='fixtures'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('fixtures')}}>Fixtures</a><a href="#football" className={hubView==='tables'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('tables')}}>Tables</a><a href="#news" onClick={()=>setMenuOpen(false)}>News</a><a href="#predictions" onClick={()=>setMenuOpen(false)}>Predictions</a><a href="#drafts" onClick={()=>setMenuOpen(false)}>Fantasy</a></nav>
       <div className="socialMini"><b>@stampitfootball</b></div>
       <button className="loginButton" onClick={()=>gate('Welcome back')}>♙ Login</button>
       <button className="menuToggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={()=>setMenuOpen(v=>!v)}><span></span><span></span><span></span></button>
@@ -111,12 +120,14 @@ export default function Home(){
       <CompetitionSidebar allLeagues={allLeagues} country={hubCountry} leagueId={hubLeague} onCountry={pickCountry} onLeague={pickLeague}/>
       <div className="dashboardContent">
         <div className="hubTopbar">
-          <div className="hubViewTabs"><button className={hubView==='scores'?'active':''} onClick={()=>setHubView('scores')}>Scores</button><button className={hubView==='fixtures'?'active':''} onClick={()=>setHubView('fixtures')}>Fixtures</button><button className={hubView==='tables'?'active':''} onClick={()=>setHubView('tables')}>Table</button></div>
+          <div className="hubViewTabs"><button className={hubView==='scores'?'active':''} onClick={()=>setHubView('scores')}>Scores</button><button className={hubView==='live'?'active':''} onClick={()=>setHubView('live')}>Live Now</button><button className={hubView==='fixtures'?'active':''} onClick={()=>setHubView('fixtures')}>Fixtures</button><button className={hubView==='tables'?'active':''} onClick={()=>setHubView('tables')}>Table</button></div>
           <div className="selectedCompetition">{activeTitle}</div>
         </div>
-        {hubView!=='tables'&&<div className="dateStrip compactDates"><button>‹</button><button className="active">Today</button><button>Tomorrow</button><button>{new Date(Date.now()+2*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</button><button>{new Date(Date.now()+3*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</button><button>›</button></div>}
+        {hubView!=='tables'&&hubView!=='live'&&<div className="dateStrip compactDates"><button>‹</button><button className="active">Today</button><button>Tomorrow</button><button>{new Date(Date.now()+2*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</button><button>{new Date(Date.now()+3*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</button><button>›</button></div>}
 
-        {hubView==='scores'&&<><div className="dashboardTitle"><div><h1>Live Scores</h1><span className="liveNow"><i></i> Live ({shownLive.length})</span></div></div>{liveLoading?<div className="empty dashboardEmpty">Checking live matches…</div>:liveError?<div className="empty dashboardEmpty">Live scores are temporarily unavailable. We’ll retry automatically.</div>:<><MatchGroups matches={visibleLive} onOpen={setMatchId} onTable={showTable} emptyText={scoresConfigured?'No matches are live in this selection right now.':'The football data connection is not configured.'}/>{shownLive.length>24&&<button className="viewAllButton" onClick={()=>setLiveExpanded(v=>!v)}>{liveExpanded?'Show Less':'View All Live Scores'} ›</button>}</>}</>}
+        {hubView==='scores'&&<><div className="dashboardTitle"><div><h1>{hubCountry||hubLeague!=='all'?'Live Scores':'Featured Live Scores'}</h1><span className="liveNow"><i></i> Live ({featuredLive.length})</span></div></div>{liveLoading?<div className="empty dashboardEmpty">Checking live matches…</div>:liveError?<div className="empty dashboardEmpty">Live scores are temporarily unavailable. We’ll retry automatically.</div>:<><MatchGroups matches={visibleFeaturedLive} onOpen={setMatchId} onTable={showTable} emptyText={scoresConfigured?(shownLive.length?'No featured competitions are live right now. Tap Live Now to see every live match.':'No matches are live in this selection right now.'):'The football data connection is not configured.'}/>{featuredLive.length>24&&<button className="viewAllButton" onClick={()=>setLiveExpanded(v=>!v)}>{liveExpanded?'Show Less':'View More Featured Scores'} ›</button>}{!hubCountry&&hubLeague==='all'&&shownLive.length>featuredLive.length&&<button className="viewAllButton" onClick={()=>setHubView('live')}>Live Now · {shownLive.length} matches ›</button>}</>}</>}
+
+        {hubView==='live'&&<><div className="dashboardTitle"><div><h1>Live Now</h1><span className="liveNow"><i></i> All Live ({shownLive.length})</span></div></div>{liveLoading?<div className="empty dashboardEmpty">Checking live matches…</div>:liveError?<div className="empty dashboardEmpty">Live scores are temporarily unavailable. We’ll retry automatically.</div>:<><MatchGroups matches={visibleAllLive} onOpen={setMatchId} onTable={showTable} emptyText={scoresConfigured?'No matches are live right now.':'The football data connection is not configured.'}/>{shownLive.length>40&&<button className="viewAllButton" onClick={()=>setLiveExpanded(v=>!v)}>{liveExpanded?'Show Less':'View All Live Matches'} ›</button>}</>}</>}
 
         {hubView==='fixtures'&&<><div className="dashboardTitle"><div><h1>Fixtures</h1><span className="hubSub">Upcoming matches · local time</span></div></div><MatchGroups matches={visibleUpcoming} onOpen={setMatchId} onTable={showTable} emptyText="No upcoming fixtures in this selection for the current two-day window."/>{(shownUpcoming.length>24||shownRecent.length>0)&&<button className="viewAllButton" onClick={()=>setFixturesExpanded(v=>!v)}>{fixturesExpanded?'Show Less':'View More Fixtures'} ›</button>}{fixturesExpanded&&shownRecent.length>0&&<><div className="subTitle">LATEST RESULTS</div><MatchGroups matches={shownRecent} onOpen={setMatchId} onTable={showTable} emptyText=""/></>}</>}
 
