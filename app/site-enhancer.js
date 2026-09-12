@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 const SUPABASE_URL='https://eujaafpddvdtxqpeodsp.supabase.co';
 const SUPABASE_KEY='sb_publishable_bYwRjZVA31vDpmcb2CdeTA_gWPZq92R';
+const BALLON_IMAGE='/api/ballondor-image?v=20260911-2';
 
 function useCollapsibleMatches(sectionId,limit,label){
   useEffect(()=>{
@@ -12,7 +13,8 @@ function useCollapsibleMatches(sectionId,limit,label){
     const apply=()=>{
       frame=null;
       const groups=[...section.querySelectorAll(':scope > .leagueMatchGroups')];
-      const primary=groups[0];if(!primary)return;
+      const primary=groups[0];
+      if(!primary){if(button)button.style.display='none';return;}
       const cards=[...primary.querySelectorAll('.match')];
       cards.forEach((card,i)=>{card.style.display=expanded||i<limit?'':'none'});
       [...primary.querySelectorAll('.leagueBlock')].forEach(block=>{
@@ -56,9 +58,9 @@ export default function SiteEnhancer(){
     const news=document.getElementById('news');if(!news)return;
     const fix=()=>{
       const first=news.querySelector('.newsGrid .news');if(!first)return;
-      const img=first.querySelector('img');if(img){img.src='/api/ballondor-image';img.alt="Ballon d'Or 2026 nominees";img.style.objectFit='cover';}
+      const img=first.querySelector('img');if(img){img.src=BALLON_IMAGE;img.alt="Ballon d'Or 2026 nominees";img.style.objectFit='cover';img.style.display='block';}
       let link=first.querySelector('a');
-      if(link){link.href='/news/ballon-dor-2026';link.target='';link.rel='';}
+      if(link){link.href='/news/ballon-dor-2026';link.target='';link.rel='';link.style.display='block';link.style.color='inherit';link.style.textDecoration='none';}
       else{link=document.createElement('a');link.href='/news/ballon-dor-2026';link.style.cssText='display:block;color:inherit;text-decoration:none';while(first.firstChild)link.appendChild(first.firstChild);first.appendChild(link)}
       const action=link.querySelector('strong');if(action)action.textContent='READ FULL STORY →';
     };
