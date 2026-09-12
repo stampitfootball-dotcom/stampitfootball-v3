@@ -26,6 +26,7 @@ const filterMatches=(list,country,league)=>sortMatches(list.filter(m=>(!country|
 const countryLabel=c=>c==='World'?'UEFA / WORLD':c?.replace('Saudi-Arabia','Saudi Arabia');
 const countryWithFlag=c=>`${countryFlags[c]||'⚽'} ${countryLabel(c)}`;
 function articleTime(v){if(!v)return'NOW';try{return new Date(v).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{return'NOW'}}
+function kickoffTime(v){if(!v)return'—';try{return new Date(v).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{return'—'}}
 
 function CompetitionSidebar({allLeagues,country,leagueId,onCountry,onLeague}){
   const countries=useMemo(()=>orderedCountries(allLeagues),[allLeagues]);
@@ -46,9 +47,9 @@ function CompetitionSidebar({allLeagues,country,leagueId,onCountry,onLeague}){
 function MatchCard({m,onOpen}){
   const live=liveStatuses.has(m.status),finished=finishedStatuses.has(m.status);
   const score=`${m.homeScore??'–'}  -  ${m.awayScore??'–'}`;
-  const time=live?(m.elapsed?`${m.elapsed}'`:'LIVE'):finished?'FT':m.utcDate?new Date(m.utcDate).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):m.statusLong||m.status;
+  const state=live?(m.elapsed?`${m.elapsed}'`:'LIVE'):finished?'FT':m.statusLong||m.status;
   return <button className={`scoreRow ${live?'isLive':''}`} onClick={()=>onOpen(m.id)}>
-    <span className="scoreTime">{time}</span>
+    <span className="scoreTime"><b>{kickoffTime(m.utcDate)}</b>{state&&<small className={live?'liveMinute':''}>{state}</small>}</span>
     <span className="scoreTeam home"><b>{m.home}</b>{m.homeLogo&&<img src={m.homeLogo} alt=""/>}</span>
     <strong>{score}</strong>
     <span className="scoreTeam away">{m.awayLogo&&<img src={m.awayLogo} alt=""/>}<b>{m.away}</b></span>
@@ -75,10 +76,22 @@ function AuthModal({close,reason='Join Stamp It Football'}){
   return <div className="modalBackdrop" onMouseDown={close}><div className="modal" onMouseDown={e=>e.stopPropagation()}><button className="x" onClick={close}>×</button><div className="eyebrow">STAMP IT FOOTBALL</div><h2>{reason}</h2><p className="muted">Browsing is always open. An account is only required for prize drafts and VIP access.</p><form onSubmit={e=>e.preventDefault()}><input type="email" placeholder="Email" required/><input type="password" placeholder="Password" required/><button className="primary wide">{mode==='signin'?'SIGN IN':'JOIN FREE'}</button></form><button className="linkbtn" onClick={()=>setMode(mode==='signin'?'join':'signin')}>{mode==='signin'?'New here? Join free':'Already a member? Sign in'}</button></div></div>
 }
 
+const statOrder=['Ball Possession','Total Shots','Shots on Goal','Shots off Goal','Blocked Shots','Corner Kicks','Fouls','Yellow Cards','Red Cards','Goalkeeper Saves','Total passes','Passes accurate'];
+function MatchStats({data}){
+  const teams=data.statistics||[];
+  if(teams.length<1||!data.hasStatistics)return <section className="matchStatsPanel"><h3>MATCH STATS</h3><div className="statsUnavailable">Detailed statistics are not available from the data provider for this match yet.</div></section>;
+  const home=teams.find(t=>Number(t.teamId)===Number(data.homeId))||teams[0];
+  const away=teams.find(t=>Number(t.teamId)===Number(data.awayId))||teams[1]||{stats:[]};
+  const get=(team,type)=>team?.stats?.find(s=>s.type===type)?.value;
+  const rows=statOrder.map(type=>({type,home:get(home,type),away:get(away,type)})).filter(r=>r.home!==null&&r.home!==undefined||r.away!==null&&r.away!==undefined);
+  if(!rows.length)return <section className="matchStatsPanel"><h3>MATCH STATS</h3><div className="statsUnavailable">Detailed statistics are not available from the data provider for this match yet.</div></section>;
+  return <section className="matchStatsPanel"><h3>MATCH STATS</h3><div className="statsTeams"><span>{data.home}</span><span>{data.away}</span></div>{rows.map(r=><div className="statRow" key={r.type}><strong>{r.home??'—'}</strong><span>{r.type}</span><strong>{r.away??'—'}</strong></div>)}</section>;
+}
+
 function MatchModal({id,close}){
   const[data,setData]=useState(null),[loading,setLoading]=useState(true);
   useEffect(()=>{let ok=true;setLoading(true);fetch(`/api/match?id=${id}`,{cache:'no-store'}).then(r=>r.json()).then(d=>{if(ok)setData(d.match||null)}).catch(()=>{if(ok)setData(null)}).finally(()=>{if(ok)setLoading(false)});return()=>{ok=false}},[id]);
-  return <div className="modalBackdrop" onMouseDown={close}><div className="matchModal" onMouseDown={e=>e.stopPropagation()}><button className="x" onClick={close}>×</button>{loading?<div className="empty">Loading match details…</div>:!data?<div className="empty">Match details are temporarily unavailable.</div>:<><div className="matchHero"><small>{data.competition} · {data.round}</small><div className="detailTeams"><div><img src={data.homeLogo}/><b>{data.home}</b></div><strong>{data.homeScore??'–'} <span>–</span> {data.awayScore??'–'}</strong><div><img src={data.awayLogo}/><b>{data.away}</b></div></div><p>{data.statusLong}</p></div>{data.events?.length>0&&<section className="lineups"><h3>MATCH TIMELINE</h3><div className="timeline">{data.events.map((e,i)=><div className="timelineRow" key={i}><span>{e.elapsed}'</span><i>{e.type==='Goal'?'⚽':e.type==='Card'?'🟨':'•'}</i><div><b>{e.player||e.team}</b><small>{e.detail}</small></div></div>)}</div></section>}</>}</div></div>
+  return <div className="modalBackdrop" onMouseDown={close}><div className="matchModal detailedMatchModal" onMouseDown={e=>e.stopPropagation()}><button className="x" onClick={close}>×</button>{loading?<div className="empty">Loading match details…</div>:!data?<div className="empty">Match details are temporarily unavailable.</div>:<><div className="matchHero"><small>{data.competition} · {data.round}</small><div className="detailTeams"><div><img src={data.homeLogo}/><b>{data.home}</b></div><strong>{data.homeScore??'–'} <span>–</span> {data.awayScore??'–'}</strong><div><img src={data.awayLogo}/><b>{data.away}</b></div></div><p>{data.statusLong}{data.minute?` · ${data.minute}'`:''}</p><div className="matchMeta"><span>🕒 {kickoffTime(data.utcDate)}</span>{data.venue&&<span>🏟 {data.venue}</span>}{data.referee&&<span>Ref: {data.referee}</span>}</div></div><MatchStats data={data}/>{data.events?.length>0&&<section className="lineups"><h3>MATCH TIMELINE</h3><div className="timeline">{data.events.map((e,i)=><div className="timelineRow" key={i}><span>{e.elapsed}'</span><i>{e.type==='Goal'?'⚽':e.type==='Card'?'🟨':'•'}</i><div><b>{e.player||e.team}</b><small>{e.detail}</small></div></div>)}</div></section>}{data.hasLineups&&<section className="lineups"><h3>LINEUPS</h3><div className="lineupSummary">{data.lineups.map((l,i)=><div key={i}><b>{l.team}</b><small>{l.formation||'Formation unavailable'}</small><p>{l.startXI.map(p=>p.name).filter(Boolean).join(' · ')}</p></div>)}</div></section>}</>}</div></div>
 }
 
 export default function Home(){
