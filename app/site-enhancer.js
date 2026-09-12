@@ -6,25 +6,10 @@ const SUPABASE_URL='https://eujaafpddvdtxqpeodsp.supabase.co';
 const SUPABASE_KEY='sb_publishable_bYwRjZVA31vDpmcb2CdeTA_gWPZq92R';
 
 const countryLabels={
-  'England':'🇬🇧 England',
-  'Spain':'🇪🇸 Spain',
-  'Italy':'🇮🇹 Italy',
-  'Germany':'🇩🇪 Germany',
-  'France':'🇫🇷 France',
-  'Netherlands':'🇳🇱 Netherlands',
-  'Portugal':'🇵🇹 Portugal',
-  'Saudi-Arabia':'🇸🇦 Saudi Arabia',
-  'Saudi Arabia':'🇸🇦 Saudi Arabia',
-  'Turkey':'🇹🇷 Turkey',
-  'USA':'🇺🇸 USA',
-  'United States':'🇺🇸 USA',
-  'Belgium':'🇧🇪 Belgium',
-  'Scotland':'🏴 Scotland',
-  'Greece':'🇬🇷 Greece',
-  'Brazil':'🇧🇷 Brazil',
-  'Argentina':'🇦🇷 Argentina',
-  'Mexico':'🇲🇽 Mexico',
-  'World':'🌐 UEFA / WORLD'
+  'England':'🇬🇧 England','Spain':'🇪🇸 Spain','Italy':'🇮🇹 Italy','Germany':'🇩🇪 Germany','France':'🇫🇷 France',
+  'Netherlands':'🇳🇱 Netherlands','Portugal':'🇵🇹 Portugal','Saudi-Arabia':'🇸🇦 Saudi Arabia','Saudi Arabia':'🇸🇦 Saudi Arabia',
+  'Turkey':'🇹🇷 Turkey','USA':'🇺🇸 USA','United States':'🇺🇸 USA','Belgium':'🇧🇪 Belgium','Scotland':'🏴 Scotland',
+  'Greece':'🇬🇷 Greece','Brazil':'🇧🇷 Brazil','Argentina':'🇦🇷 Argentina','Mexico':'🇲🇽 Mexico','World':'🌐 UEFA / WORLD'
 };
 const countryOrder=['England','Spain','Italy','Germany','France','World','Netherlands','Portugal','Saudi-Arabia','Saudi Arabia','Turkey','USA','United States'];
 
@@ -32,7 +17,7 @@ function decorateFootballBrowsers(){
   document.querySelectorAll('.countryScroller').forEach(scroller=>{
     const buttons=[...scroller.querySelectorAll('button')];
     buttons.forEach(btn=>{
-      if(!btn.dataset.countryRaw) btn.dataset.countryRaw=btn.textContent.trim();
+      if(!btn.dataset.countryRaw)btn.dataset.countryRaw=btn.textContent.trim();
       const raw=btn.dataset.countryRaw;
       btn.textContent=countryLabels[raw]||raw;
     });
@@ -44,10 +29,7 @@ function decorateFootballBrowsers(){
     }).forEach(btn=>scroller.appendChild(btn));
   });
   document.querySelectorAll('.leagueScroller button').forEach(btn=>{
-    if(btn.dataset.navDecorated)return;
-    const txt=btn.textContent.trim();
-    if(txt==='ALL WORLD')btn.textContent='ALL UEFA / WORLD';
-    btn.dataset.navDecorated='1';
+    if(btn.textContent.trim()==='ALL WORLD')btn.textContent='ALL UEFA / WORLD';
   });
 }
 
@@ -56,16 +38,19 @@ export default function SiteEnhancer(){
 
   useEffect(()=>{
     decorateFootballBrowsers();
-    const observer=new MutationObserver(()=>decorateFootballBrowsers());
-    observer.observe(document.body,{childList:true,subtree:true});
-    return()=>observer.disconnect();
+    let runs=0;
+    const timer=setInterval(()=>{
+      decorateFootballBrowsers();
+      runs+=1;
+      if(runs>=12)clearInterval(timer);
+    },500);
+    return()=>clearInterval(timer);
   },[]);
 
   useEffect(()=>{
     let active=true;
     fetch(`${SUPABASE_URL}/rest/v1/free_picks?published=eq.true&select=*&order=kickoff_at.asc.nullslast,created_at.desc`,{
-      headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`},
-      cache:'no-store'
+      headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`},cache:'no-store'
     }).then(r=>r.ok?r.json():[]).then(d=>{if(active)setPicks(Array.isArray(d)?d:[])}).catch(()=>{if(active)setPicks([])}).finally(()=>{if(active)setLoading(false)});
     return()=>{active=false};
   },[]);
