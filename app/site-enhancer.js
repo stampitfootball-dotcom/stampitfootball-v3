@@ -27,18 +27,39 @@ const menuTranslations={
 const countryLabels={
   'England':'🇬🇧 England','Spain':'🇪🇸 Spain','Italy':'🇮🇹 Italy','Germany':'🇩🇪 Germany','France':'🇫🇷 France',
   'Netherlands':'🇳🇱 Netherlands','Portugal':'🇵🇹 Portugal','Saudi-Arabia':'🇸🇦 Saudi Arabia','Saudi Arabia':'🇸🇦 Saudi Arabia',
-  'Turkey':'🇹🇷 Turkey','USA':'🇺🇸 USA','United States':'🇺🇸 USA','Belgium':'🇧🇪 Belgium','Scotland':'🏴 Scotland',
+  'Turkey':'🇹🇷 Turkey','USA':'🇺🇸 USA','United States':'🇺🇸 USA','Belgium':'🇧🇪 Belgium','Scotland':'🇬🇧 Scotland',
   'Greece':'🇬🇷 Greece','Brazil':'🇧🇷 Brazil','Argentina':'🇦🇷 Argentina','Mexico':'🇲🇽 Mexico','World':'🌐 UEFA / WORLD'
 };
 const countryOrder=['England','Spain','Italy','Germany','France','World','Netherlands','Portugal','Saudi-Arabia','Saudi Arabia','Turkey','USA','United States'];
 
-function decorateFootballBrowsers(){
+function flagFromCode(code){
+  if(!code||code.length!==2)return '🏳️';
+  return String.fromCodePoint(...code.toUpperCase().split('').map(ch=>127397+ch.charCodeAt(0)));
+}
+
+function decorateCountrySelects(flagMap={}){
+  document.querySelectorAll('.fixtureControls select:first-child').forEach(select=>{
+    [...select.options].forEach(opt=>{
+      if(!opt.value){opt.textContent='🌍 All countries';return}
+      if(!opt.dataset.countryRaw)opt.dataset.countryRaw=opt.value;
+      const raw=opt.dataset.countryRaw;
+      const pretty=raw==='World'?'UEFA / WORLD':raw.replace('Saudi-Arabia','Saudi Arabia');
+      const flag=countryLabels[raw]?.split(' ')[0]||flagMap[raw]||'🏳️';
+      opt.textContent=`${flag} ${pretty}`;
+    });
+  });
+  const slogan=document.querySelector('.headerSlogan small');
+  if(slogan)slogan.textContent='HOME OF FOOTBALL FANS';
+}
+
+function decorateFootballBrowsers(flagMap={}){
   document.querySelectorAll('.countryScroller').forEach(scroller=>{
     const buttons=[...scroller.querySelectorAll('button')];
     buttons.forEach(btn=>{
       if(!btn.dataset.countryRaw)btn.dataset.countryRaw=btn.textContent.trim();
       const raw=btn.dataset.countryRaw;
-      btn.textContent=countryLabels[raw]||raw;
+      const pretty=raw==='World'?'UEFA / WORLD':raw.replace('Saudi-Arabia','Saudi Arabia');
+      btn.textContent=countryLabels[raw]||`${flagMap[raw]||'🏳️'} ${pretty}`;
     });
     buttons.sort((a,b)=>{
       const ar=a.dataset.countryRaw||'',br=b.dataset.countryRaw||'';
@@ -50,6 +71,7 @@ function decorateFootballBrowsers(){
   document.querySelectorAll('.leagueScroller button').forEach(btn=>{
     if(btn.textContent.trim()==='ALL WORLD')btn.textContent='ALL UEFA / WORLD';
   });
+  decorateCountrySelects(flagMap);
 }
 
 function readLanguage(){
@@ -82,18 +104,7 @@ function translateHeaderMenu(code){
 function hideTranslateChrome(){
   document.documentElement.style.setProperty('top','0px','important');
   if(document.body)document.body.style.setProperty('top','0px','important');
-  const selectors=[
-    '.goog-te-banner-frame',
-    '.goog-te-banner-frame.skiptranslate',
-    'iframe.goog-te-banner-frame',
-    'iframe.skiptranslate',
-    '.VIpgJd-ZVi9od-ORHb-OEVmcd',
-    '.VIpgJd-ZVi9od-ORHb-OEVmcd.skiptranslate',
-    'iframe.VIpgJd-ZVi9od-ORHb-OEVmcd',
-    '.goog-te-balloon-frame',
-    '.goog-tooltip',
-    '#goog-gt-tt'
-  ];
+  const selectors=['.goog-te-banner-frame','.goog-te-banner-frame.skiptranslate','iframe.goog-te-banner-frame','iframe.skiptranslate','.VIpgJd-ZVi9od-ORHb-OEVmcd','.VIpgJd-ZVi9od-ORHb-OEVmcd.skiptranslate','iframe.VIpgJd-ZVi9od-ORHb-OEVmcd','.goog-te-balloon-frame','.goog-tooltip','#goog-gt-tt'];
   document.querySelectorAll(selectors.join(',')).forEach(el=>{
     el.style.setProperty('display','none','important');
     el.style.setProperty('visibility','hidden','important');
@@ -116,12 +127,7 @@ function setTranslateCookie(code){
 }
 
 function LanguageSelector({language,onChange}){
-  return <div className="stampLanguagePicker" title="Website language">
-    <span>🌐</span>
-    <select value={language} onChange={e=>onChange(e.target.value)} aria-label="Website language">
-      {languages.map(l=><option key={l.code} value={l.code}>{l.flag} {l.label}</option>)}
-    </select>
-  </div>;
+  return <div className="stampLanguagePicker" title="Website language"><span>🌐</span><select value={language} onChange={e=>onChange(e.target.value)} aria-label="Website language">{languages.map(l=><option key={l.code} value={l.code}>{l.flag} {l.label}</option>)}</select></div>;
 }
 
 export default function SiteEnhancer(){
@@ -129,14 +135,25 @@ export default function SiteEnhancer(){
   const[language,setLanguage]=useState('en'),[headerTarget,setHeaderTarget]=useState(null);
 
   useEffect(()=>{
-    decorateFootballBrowsers();
+    let flagMap={};
+    let active=true;
+    fetch('/api/leagues',{cache:'no-store'}).then(r=>r.ok?r.json():{leagues:[]}).then(d=>{
+      if(!active)return;
+      (d.leagues||[]).forEach(l=>{
+        if(l.country==='England')flagMap[l.country]='🇬🇧';
+        else if(l.country==='Scotland')flagMap[l.country]='🇬🇧';
+        else if(l.country==='World')flagMap[l.country]='🌐';
+        else if(l.country&&!flagMap[l.country])flagMap[l.country]=flagFromCode(l.code);
+      });
+      decorateFootballBrowsers(flagMap);
+    }).catch(()=>decorateFootballBrowsers(flagMap));
     let runs=0;
     const timer=setInterval(()=>{
-      decorateFootballBrowsers();
+      decorateFootballBrowsers(flagMap);
       runs+=1;
-      if(runs>=12)clearInterval(timer);
+      if(runs>=20)clearInterval(timer);
     },500);
-    return()=>clearInterval(timer);
+    return()=>{active=false;clearInterval(timer)};
   },[]);
 
   useEffect(()=>{
@@ -146,6 +163,7 @@ export default function SiteEnhancer(){
     translateHeaderMenu(current);
     setHeaderTarget(document.querySelector('.dashboardHeader'));
     hideTranslateChrome();
+    decorateCountrySelects();
 
     let menuRuns=0;
     const menuTimer=setInterval(()=>{
@@ -161,14 +179,8 @@ export default function SiteEnhancer(){
     window.googleTranslateElementInit=()=>{
       if(window.google?.translate?.TranslateElement){
         try{
-          new window.google.translate.TranslateElement({
-            pageLanguage:'en',
-            includedLanguages:'ar,en,es,hy,it,tr',
-            autoDisplay:false
-          },'google_translate_element');
-          setTimeout(hideTranslateChrome,50);
-          setTimeout(hideTranslateChrome,500);
-          setTimeout(hideTranslateChrome,1500);
+          new window.google.translate.TranslateElement({pageLanguage:'en',includedLanguages:'ar,en,es,hy,it,tr',autoDisplay:false},'google_translate_element');
+          setTimeout(hideTranslateChrome,50);setTimeout(hideTranslateChrome,500);setTimeout(hideTranslateChrome,1500);
         }catch{}
       }
     };
@@ -179,51 +191,31 @@ export default function SiteEnhancer(){
       script.src='https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
       script.async=true;
       document.body.appendChild(script);
-    }else if(window.google?.translate?.TranslateElement){
-      window.googleTranslateElementInit?.();
-    }
+    }else if(window.google?.translate?.TranslateElement){window.googleTranslateElementInit?.()}
 
     return()=>{clearInterval(menuTimer);toggle?.removeEventListener('click',onMenuOpen)};
   },[]);
 
   const changeLanguage=code=>{
-    setLanguage(code);
-    applyDirection(code);
-    translateHeaderMenu(code);
+    setLanguage(code);applyDirection(code);translateHeaderMenu(code);
     try{localStorage.setItem('stampit-language',code)}catch{}
-    setTranslateCookie(code);
-    window.location.reload();
+    setTranslateCookie(code);window.location.reload();
   };
 
   useEffect(()=>{
     let active=true;
-    fetch(`${SUPABASE_URL}/rest/v1/free_picks?published=eq.true&select=*&order=kickoff_at.asc.nullslast,created_at.desc`,{
-      headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`},cache:'no-store'
-    }).then(r=>r.ok?r.json():[]).then(d=>{if(active)setPicks(Array.isArray(d)?d:[])}).catch(()=>{if(active)setPicks([])}).finally(()=>{if(active)setLoading(false)});
+    fetch(`${SUPABASE_URL}/rest/v1/free_picks?published=eq.true&select=*&order=kickoff_at.asc.nullslast,created_at.desc`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`},cache:'no-store'})
+      .then(r=>r.ok?r.json():[]).then(d=>{if(active)setPicks(Array.isArray(d)?d:[])}).catch(()=>{if(active)setPicks([])}).finally(()=>{if(active)setLoading(false)});
     return()=>{active=false};
   },[]);
 
   return <>
     <style>{`
       .stampLanguagePicker{position:absolute;right:116px;top:7px;z-index:80;display:flex;align-items:center;gap:5px;background:#071a17;border:1px solid #28534a;border-radius:7px;padding:3px 6px;color:#dce8e4;font-size:11px;box-shadow:0 4px 14px #0004}
-      .stampLanguagePicker select{appearance:auto;background:transparent;border:0;outline:0;color:#e9f2ef;font-size:11px;font-weight:800;cursor:pointer;max-width:120px}
-      .stampLanguagePicker option{background:#071a17;color:#fff}
-      #google_translate_element,
-      .goog-te-banner-frame,
-      .goog-te-banner-frame.skiptranslate,
-      iframe.goog-te-banner-frame,
-      iframe.skiptranslate,
-      .VIpgJd-ZVi9od-ORHb-OEVmcd,
-      .VIpgJd-ZVi9od-ORHb-OEVmcd.skiptranslate,
-      iframe.VIpgJd-ZVi9od-ORHb-OEVmcd,
-      .goog-te-balloon-frame,
-      .goog-tooltip,
-      #goog-gt-tt{display:none!important;visibility:hidden!important;height:0!important;width:0!important;border:0!important}
-      html,body{top:0!important}
-      body>.skiptranslate{display:none!important;height:0!important;overflow:hidden!important}
-      html[dir="rtl"] .scoreTeam.home{justify-content:flex-start;text-align:left}
-      html[dir="rtl"] .scoreTeam.away{justify-content:flex-end;text-align:right}
-      html[dir="rtl"] .competitionSidebar{border-right:0;border-left:1px solid #19433c}
+      .stampLanguagePicker select{appearance:auto;background:transparent;border:0;outline:0;color:#e9f2ef;font-size:11px;font-weight:800;cursor:pointer;max-width:120px}.stampLanguagePicker option{background:#071a17;color:#fff}
+      #google_translate_element,.goog-te-banner-frame,.goog-te-banner-frame.skiptranslate,iframe.goog-te-banner-frame,iframe.skiptranslate,.VIpgJd-ZVi9od-ORHb-OEVmcd,.VIpgJd-ZVi9od-ORHb-OEVmcd.skiptranslate,iframe.VIpgJd-ZVi9od-ORHb-OEVmcd,.goog-te-balloon-frame,.goog-tooltip,#goog-gt-tt{display:none!important;visibility:hidden!important;height:0!important;width:0!important;border:0!important}
+      html,body{top:0!important}body>.skiptranslate{display:none!important;height:0!important;overflow:hidden!important}
+      html[dir="rtl"] .scoreTeam.home{justify-content:flex-start;text-align:left}html[dir="rtl"] .scoreTeam.away{justify-content:flex-end;text-align:right}html[dir="rtl"] .competitionSidebar{border-right:0;border-left:1px solid #19433c}
       @media(max-width:760px){.stampLanguagePicker{right:67px;top:12px;padding:2px 5px}.stampLanguagePicker select{max-width:94px;font-size:10px}.stampLanguagePicker>span{display:none}}
       @media(max-width:390px){.stampLanguagePicker{right:62px}.stampLanguagePicker select{max-width:80px}}
     `}</style>
