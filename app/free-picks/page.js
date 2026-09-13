@@ -5,7 +5,29 @@ import '../football-hub.css';
 const SUPABASE_URL='https://eujaafpddvdtxqpeodsp.supabase.co';
 const SUPABASE_KEY='sb_publishable_bYwRjZVA31vDpmcb2CdeTA_gWPZq92R';
 
-const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+const TEAM_ALIASES={
+ mancity:'manchestercity',manchestercityfc:'manchestercity',
+ manutd:'manchesterunited',manunited:'manchesterunited',manchesterunitedfc:'manchesterunited',
+ nttmforest:'nottinghamforest',nottinghamforestfc:'nottinghamforest',
+ spurs:'tottenhamhotspur',tottenham:'tottenhamhotspur',tottenhamhotspurfc:'tottenhamhotspur',
+ wolves:'wolverhamptonwanderers',wolverhampton:'wolverhamptonwanderers',wolverhamptonwanderersfc:'wolverhamptonwanderers',
+ brighton:'brightonandhovealbion',brightonhovealbion:'brightonandhovealbion',
+ newcastle:'newcastleunited',newcastleunitedfc:'newcastleunited',
+ westham:'westhamunited',westhamunitedfc:'westhamunited',
+ leeds:'leedsunited',leedsunitedfc:'leedsunited',
+ psg:'parissaintgermain',parissg:'parissaintgermain',parissaintgermainfc:'parissaintgermain',
+ acmilan:'milan',milanac:'milan',
+ inter:'internazionale',intermilan:'internazionale',fcinternazionale:'internazionale',internazionalemilano:'internazionale',
+ bayern:'bayernmunich',bayernmunchen:'bayernmunich',fcbayernmunchen:'bayernmunich',fcbayernmunich:'bayernmunich',
+ monchengladbach:'borussiamonchengladbach',borussiamgladbach:'borussiamonchengladbach',gladbach:'borussiamonchengladbach',
+ koln:'cologne',fckoln:'cologne','1fckoln':'cologne',fccologne:'cologne',
+ sociedad:'realsociedad',realsociedaddefootball:'realsociedad',
+ atletico:'atleticomadrid',atleticodemadrid:'atleticomadrid',
+ atletico_madrid:'atleticomadrid'
+};
+const canonicalTeam=s=>{const n=norm(s).replace(/^(fc|afc|ssc)/,'').replace(/(fc|cf|afc|sc)$/,'');return TEAM_ALIASES[n]||n};
+const sameTeam=(a,b)=>{const x=canonicalTeam(a),y=canonicalTeam(b);if(!x||!y)return false;if(x===y)return true;return x.length>=6&&y.length>=6&&(x.includes(y)||y.includes(x));};
 const pad=n=>String(n).padStart(2,'0');
 const localYmd=value=>{const d=value instanceof Date?value:new Date(value);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
 const prettyDate=value=>new Date(`${value}T12:00:00`).toLocaleDateString([],{weekday:'long',month:'long',day:'numeric',year:'numeric'});
@@ -14,8 +36,10 @@ const finishedStatuses=new Set(['FT','AET','PEN']);
 
 function findFixture(p,fixtures){
  if(p.fixture_id){const byId=fixtures.find(f=>String(f.id)===String(p.fixture_id));if(byId)return byId}
- const h=norm(p.home_team),a=norm(p.away_team);
- return fixtures.find(f=>norm(f.home)===h&&norm(f.away)===a)||null;
+ const exact=fixtures.find(f=>sameTeam(f.home,p.home_team)&&sameTeam(f.away,p.away_team));
+ if(exact)return exact;
+ const reversed=fixtures.find(f=>sameTeam(f.home,p.away_team)&&sameTeam(f.away,p.home_team));
+ return reversed||null;
 }
 
 function evaluatePick(p,fixture){
@@ -35,16 +59,16 @@ function evaluatePick(p,fixture){
  else if(v==='btts no'||v.includes('both teams not to score')){hit=home===0||away===0}
  else if(v.includes(' or draw')){
   const team=value.split(/\s+or\s+draw/i)[0].trim();
-  if(norm(team)===norm(p.home_team))hit=home>=away;
-  else if(norm(team)===norm(p.away_team))hit=away>=home;
+  if(sameTeam(team,p.home_team))hit=home>=away;
+  else if(sameTeam(team,p.away_team))hit=away>=home;
  } else if(v.includes('draw or ')){
   const team=value.split(/draw\s+or\s+/i)[1]?.trim();
-  if(norm(team)===norm(p.home_team))hit=home>=away;
-  else if(norm(team)===norm(p.away_team))hit=away>=home;
+  if(sameTeam(team,p.home_team))hit=home>=away;
+  else if(sameTeam(team,p.away_team))hit=away>=home;
  } else if(v.includes(' to win')){
   const team=value.replace(/\s+to\s+win.*$/i,'').trim();
-  if(norm(team)===norm(p.home_team))hit=home>away;
-  else if(norm(team)===norm(p.away_team))hit=away>home;
+  if(sameTeam(team,p.home_team))hit=home>away;
+  else if(sameTeam(team,p.away_team))hit=away>home;
  } else if(v==='home win'||v==='1'){hit=home>away}
  else if(v==='away win'||v==='2'){hit=away>home}
  else if(v==='draw'||v==='x'){hit=home===away}
