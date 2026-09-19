@@ -15,3 +15,30 @@
 .authHeaderActions{display:flex;align-items:center;gap:7px}.joinButton{border:1px solid #35d8c1;background:#35d8c1;color:#041713;border-radius:7px;padding:9px 12px;font-size:11px;font-weight:900;letter-spacing:.4px;cursor:pointer;white-space:nowrap}.joinButton:hover{filter:brightness(1.08)}@media(max-width:760px){.authHeaderActions{gap:4px}.authHeaderActions .loginButton,.authHeaderActions .joinButton{padding:8px 7px;font-size:9px}}
 
 .loggedInButton{display:flex!important;align-items:center;gap:6px;border-color:#35d8c1!important;color:#8ff3e4!important}.loginDot{width:17px;height:17px;border-radius:50%;display:inline-grid;place-items:center;background:#35d8c1;color:#05211c;font-size:10px;font-weight:900}@media(max-width:760px){.loggedInButton{display:flex!important;position:relative!important;font-size:9px!important;padding:7px 8px!important;white-space:nowrap}.loginDot{width:15px;height:15px}}
+
+/* Approved mobile visual refresh */
+.socialIcon.instagram{background:radial-gradient(circle at 30% 110%,#ffd600 0 18%,#ff7a00 30%,#ff0169 54%,#d300c5 72%,#7638fa 100%)!important;border-color:#ff4a9c!important;color:#fff!important}
+.socialIcon.tiktok{background:#050505!important;border-color:#2c5e58!important;color:#fff!important;text-shadow:-1px 0 #25f4ee,1px 0 #fe2c55}
+.socialIcon.facebook{background:#1877f2!important;border-color:#4290f5!important;color:#fff!important}
+.socialIcon.x{background:#050505!important;border-color:#53615f!important;color:#fff!important}
+.footballHero{min-height:112px;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-top:1px solid #173e37;border-bottom:1px solid #1b5148;background:radial-gradient(ellipse at center bottom,#0a675a 0,#06362f 22%,#061914 58%,#04100d 100%);box-shadow:inset 0 -22px 42px #12bda91a}
+.footballHero strong{font-size:29px;line-height:1;font-weight:950;font-style:italic;letter-spacing:.4px;color:#fff}.footballHero strong em{color:#32d9c5;font-style:italic}.footballHero span{margin-top:12px;font-size:11px;font-weight:850;letter-spacing:1px;color:#f2f8f6}
+.loggedInButton{width:43px!important;height:43px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center!important;position:relative!important;background:#06211d!important;border:1px solid #26d7c0!important;color:#32d9c5!important}
+.accountPerson{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;font-size:0;background:linear-gradient(#30dac5 0 45%,transparent 46%);position:relative}.accountPerson:after{content:'';position:absolute;bottom:1px;width:24px;height:11px;border-radius:12px 12px 7px 7px;background:#30dac5}.accountPerson:before{content:'';position:absolute;top:0;width:10px;height:10px;border-radius:50%;background:#30dac5;z-index:2}
+.loggedInText{display:none}.loggedInButton:after{content:'';position:absolute;right:2px;top:2px;width:7px;height:7px;border-radius:50%;background:#25c86f;border:2px solid #06211d}
+@media(max-width:760px){
+ .compactHeader{grid-template-columns:minmax(0,1fr) auto auto!important;column-gap:9px!important;row-gap:7px!important}
+ .compactHeader .brand{grid-column:1/2!important;grid-row:1!important}
+ .compactHeader .loggedInButton,.compactHeader .authHeaderActions{grid-column:2!important;grid-row:1!important}
+ .compactHeader .menuToggle{grid-column:3!important;grid-row:1!important}
+ .compactHeader .headerSloganWrap{grid-column:1/-1!important;grid-row:2!important;display:block!important}
+ .headerSloganWrap .headerSlogan{font-size:12px!important;margin-bottom:9px!important}
+ .headerSloganWrap .socialLinks{justify-content:flex-start!important;gap:10px!important}
+ .headerSloganWrap .socialLinks a{width:34px!important;height:34px!important}
+ .headerSloganWrap .socialLinks a span{font-size:16px!important}
+ .compactHeader .socialMini{display:none!important}
+ .loggedInButton{width:42px!important;height:42px!important}
+ .footballHero{min-height:94px;margin-left:-1px;margin-right:-1px}
+ .footballHero strong{font-size:22px}.footballHero span{font-size:9px;letter-spacing:.55px;margin-top:9px}
+ .siteAnnouncement{margin-top:2px!important}
+}
