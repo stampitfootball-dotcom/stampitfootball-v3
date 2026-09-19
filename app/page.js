@@ -27,12 +27,12 @@ const countryLabel=c=>c==='World'?'UEFA / WORLD':c?.replace('Saudi-Arabia','Saud
 const countryWithFlag=c=>`${countryFlags[c]||'⚽'} ${countryLabel(c)}`;
 
 const socialLinks=[
-  {name:'Instagram',href:'https://www.instagram.com/stampitfootball/',icon:'◎'},
-  {name:'TikTok',href:'https://www.tiktok.com/@stamp.it.football',icon:'♪'},
-  {name:'Facebook',href:'https://www.facebook.com/stampitfootball',icon:'f'},
-  {name:'X',href:'https://x.com/stampitfootball',icon:'𝕏'}
+  {name:'Instagram',href:'https://www.instagram.com/stampitfootball/',icon:'◎',cls:'instagram'},
+  {name:'TikTok',href:'https://www.tiktok.com/@stamp.it.football',icon:'♪',cls:'tiktok'},
+  {name:'Facebook',href:'https://www.facebook.com/stampitfootball',icon:'f',cls:'facebook'},
+  {name:'X',href:'https://x.com/stampitfootball',icon:'𝕏',cls:'x'}
 ];
-function SocialLinks({footer=false}){return <div className={footer?'socialLinks footerSocialLinks':'socialLinks'}>{socialLinks.map(s=><a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.name} title={s.name}><span>{s.icon}</span></a>)}</div>}
+function SocialLinks({footer=false}){return <div className={footer?'socialLinks footerSocialLinks':'socialLinks'}>{socialLinks.map(s=><a className={'socialIcon '+s.cls} key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.name} title={s.name}><span>{s.icon}</span></a>)}</div>}
 function articleTime(v){if(!v)return'NOW';try{return new Date(v).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{return'NOW'}}
 function kickoffTime(v){if(!v)return'—';try{return new Date(v).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{return'—'}}
 function liveMinute(m){
@@ -177,7 +177,7 @@ export default function Home(){
       <div className="headerSloganWrap"><div className="headerSlogan">IT’S FOOTBALL, <span>NOT SOCCER.</span></div><SocialLinks/></div>
       <nav><a href="#football" className={hubView==='scores'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('scores')}}>Scores</a><a href="#football" className={hubView==='live'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('live')}}>Live Now</a><a href="#football" className={hubView==='fixtures'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('fixtures')}}>Fixtures</a><a href="#football" className={hubView==='tables'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('tables')}}>Tables</a><a href="#news" onClick={()=>setMenuOpen(false)}>News</a><a href="#predictions" onClick={()=>setMenuOpen(false)}>Predictions</a><a href="#drafts" onClick={()=>setMenuOpen(false)}>Fantasy</a></nav>
       <div className="socialMini"><b>@stampitfootball</b></div>
-      {session?<button className="loginButton loggedInButton" onClick={()=>gate('My Account')}><span className="loginDot">✓</span> LOGGED IN</button>:<div className="authHeaderActions"><button className="loginButton" onClick={()=>gate('Welcome back')}>LOGIN</button><button className="joinButton" onClick={()=>gate('Create your free account')} >LOG IN / SIGN UP</button></div>}
+      {session?<button className="loginButton loggedInButton" aria-label="Logged in - open account" onClick={()=>gate('My Account')}><span className="accountPerson">●</span><span className="loggedInText">LOGGED IN</span></button>:<div className="authHeaderActions"><button className="loginButton" onClick={()=>gate('Welcome back')}>LOGIN</button><button className="joinButton" onClick={()=>gate('Create your free account')} >LOG IN / SIGN UP</button></div>}
       <button className="menuToggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={()=>setMenuOpen(v=>!v)}><span></span><span></span><span></span></button>
     </header>
 
@@ -188,6 +188,7 @@ export default function Home(){
           <div className="hubViewTabs"><button className={hubView==='scores'?'active':''} onClick={()=>setHubView('scores')}>Scores</button><button className={hubView==='live'?'active':''} onClick={()=>setHubView('live')}>Live Now</button><button className={hubView==='fixtures'?'active':''} onClick={()=>setHubView('fixtures')}>Fixtures</button><button className={hubView==='tables'?'active':''} onClick={()=>setHubView('tables')}>Table</button></div>
           <div className="siteAnnouncement" aria-label="Website announcement"><div className="announcementTrack"><span>🚀 STAMP IT FOOTBALL IS GROWING — MORE FEATURES ARE COMING SOON • PLEASE BEAR WITH US DURING THIS TESTING PERIOD • THE STAMP IT FOOTBALL APP IS COMING SOON 📱</span><span aria-hidden="true">🚀 STAMP IT FOOTBALL IS GROWING — MORE FEATURES ARE COMING SOON • PLEASE BEAR WITH US DURING THIS TESTING PERIOD • THE STAMP IT FOOTBALL APP IS COMING SOON 📱</span></div></div>
         </div>
+        <div className="footballHero"><strong>THE HOME OF <em>FOOTBALL</em></strong><span>NEWS&nbsp;&nbsp;•&nbsp;&nbsp; SCORES&nbsp;&nbsp;•&nbsp;&nbsp; FIXTURES&nbsp;&nbsp;•&nbsp;&nbsp; PREDICTIONS</span></div>
         {hubView!=='tables'&&hubView!=='live'&&<div className="dateStrip compactDates"><button>‹</button><button className="active">Today</button><button>Tomorrow</button><button>{new Date(Date.now()+2*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</button><button>{new Date(Date.now()+3*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</button><button>›</button></div>}
 
         {hubView==='scores'&&<><div className="dashboardTitle"><div><h1>{hubCountry||hubLeague!=='all'?'Live Scores':'Featured Live Scores'}</h1><span className="liveNow"><i></i> Live ({featuredLive.length})</span></div></div>{liveLoading?<div className="empty dashboardEmpty">Checking live matches…</div>:liveError?<div className="empty dashboardEmpty">Live scores are temporarily unavailable. We’ll retry automatically.</div>:<><MatchGroups matches={visibleFeaturedLive} onOpen={setMatchId} onTable={showTable} emptyText={scoresConfigured?(shownLive.length?'No featured competitions are live right now. Tap Live Now to see every live match.':'No matches are live in this selection right now.'):'The football data connection is not configured.'}/>{featuredLive.length>24&&<button className="viewAllButton" onClick={()=>setLiveExpanded(v=>!v)}>{liveExpanded?'Show Less':'View More Featured Scores'} ›</button>}{!hubCountry&&hubLeague==='all'&&shownLive.length>featuredLive.length&&<button className="viewAllButton" onClick={()=>setHubView('live')}>Live Now · {shownLive.length} matches ›</button>}</>}</>}
