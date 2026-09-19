@@ -34,9 +34,9 @@ export async function GET(req) {
       apiFootball('fixtures/statistics', { fixture: id }, 15),
       apiFootball('fixtures/events', { fixture: id }, 15),
       apiFootball('fixtures/lineups', { fixture: id }, 60),
-      apiFootball('fixtures', { team: raw.teams?.home?.id, last: 5 }, 300),
-      apiFootball('fixtures', { team: raw.teams?.away?.id, last: 5 }, 300),
-      apiFootball('fixtures/headtohead', { h2h: `${raw.teams?.home?.id}-${raw.teams?.away?.id}`, last: 5 }, 300),
+      apiFootball('fixtures', { team: raw.teams?.home?.id, last: 8 }, 300),
+      apiFootball('fixtures', { team: raw.teams?.away?.id, last: 8 }, 300),
+      apiFootball('fixtures', { h2h: `${raw.teams?.home?.id}-${raw.teams?.away?.id}`, last: 8 }, 300),
     ]);
 
     const match = mapFixture(raw);
