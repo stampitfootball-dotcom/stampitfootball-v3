@@ -66,3 +66,35 @@
  .compactHeader .headerSloganWrap{padding-left:94px!important;margin-top:-27px!important}
  .headerSloganWrap .socialLinks a{width:35px!important;height:35px!important}
 }
+
+/* Mobile header + hero final parity pass */
+.socialLinks a svg{width:21px;height:21px;display:block}
+.socialIcon.instagram{background:radial-gradient(circle at 30% 105%,#ffd600 0 16%,#ff7a00 28%,#ff0169 52%,#d300c5 72%,#7638fa 100%)!important;color:#fff!important}
+.socialIcon.tiktok{background:#050505!important;color:#fff!important}
+.socialIcon.facebook{background:#1877f2!important;color:#fff!important}
+.socialIcon.x{background:#050505!important;color:#fff!important}
+@media(max-width:760px){
+ .compactHeader{position:relative!important;display:grid!important;grid-template-columns:minmax(0,1fr) 48px 48px!important;grid-template-rows:auto auto!important;padding:14px 18px 18px!important;min-height:245px!important;background:linear-gradient(180deg,#03130fdd,#03130fee),url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80') center bottom/cover no-repeat!important}
+ .compactHeader .brand{grid-column:1!important;grid-row:1!important;align-self:start!important;display:flex!important;position:relative!important;z-index:2!important}
+ .compactHeader .brand img{width:88px!important;height:88px!important}
+ .compactHeader .brand span b{font-size:27px!important;line-height:1!important}.compactHeader .brand span small{font-size:15px!important;letter-spacing:4px!important}
+ .compactHeader .loggedInButton,.compactHeader .authHeaderActions{grid-column:2!important;grid-row:1!important;position:relative!important;z-index:5!important;align-self:start!important;justify-self:center!important;margin:4px 0 0!important}
+ .compactHeader .menuToggle{grid-column:3!important;grid-row:1!important;position:relative!important;z-index:5!important;align-self:start!important;justify-self:end!important;margin:4px 0 0!important;right:auto!important;top:auto!important}
+ .compactHeader .headerSloganWrap{grid-column:1/-1!important;grid-row:2!important;position:absolute!important;left:106px!important;top:111px!important;padding:0!important;margin:0!important;display:block!important;min-height:0!important;z-index:3!important}
+ .headerSloganWrap .headerSlogan{font-size:13px!important;line-height:1.2!important;margin:0 0 12px!important;white-space:nowrap!important}
+ .headerSloganWrap .socialLinks{display:flex!important;justify-content:flex-start!important;gap:12px!important}
+ .headerSloganWrap .socialLinks a{display:grid!important;position:static!important;inset:auto!important;transform:none!important;width:40px!important;height:40px!important;border-radius:50%!important;box-sizing:border-box!important}
+ .headerSloganWrap .socialLinks a svg{width:22px!important;height:22px!important}
+ .compactHeader .socialMini{display:none!important}
+ .footballHero{min-height:210px!important;margin:0!important;border-radius:0!important;background:linear-gradient(180deg,#02110c55,#02110c70),url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1400&q=85') center 62%/cover no-repeat!important;box-shadow:inset 0 35px 55px #0007,inset 0 -30px 50px #0007!important}
+ .footballHero strong{font-family:Impact,'Arial Black',sans-serif!important;font-size:31px!important;line-height:.9!important;text-shadow:0 3px 5px #000!important}
+ .footballHero strong em{font-size:48px!important;color:#24e0c8!important;margin-top:8px!important}
+ .footballHero>span{font-size:10px!important;letter-spacing:1.1px!important;margin-top:18px!important;text-shadow:0 2px 3px #000!important}
+}
+@media(max-width:390px){
+ .compactHeader{padding-left:14px!important;padding-right:14px!important;grid-template-columns:minmax(0,1fr) 44px 44px!important;min-height:232px!important}
+ .compactHeader .brand img{width:78px!important;height:78px!important}.compactHeader .brand span b{font-size:23px!important}.compactHeader .brand span small{font-size:13px!important}
+ .compactHeader .headerSloganWrap{left:94px!important;top:104px!important}
+ .headerSloganWrap .headerSlogan{font-size:11px!important}.headerSloganWrap .socialLinks{gap:10px!important}.headerSloganWrap .socialLinks a{width:37px!important;height:37px!important}
+ .footballHero{min-height:190px!important}.footballHero strong{font-size:27px!important}.footballHero strong em{font-size:42px!important}
+}
