@@ -171,7 +171,7 @@ export default function Home(){
       <div className="dashboardContent">
         <div className="hubTopbar">
           <div className="hubViewTabs"><button className={hubView==='scores'?'active':''} onClick={()=>setHubView('scores')}>Scores</button><button className={hubView==='live'?'active':''} onClick={()=>setHubView('live')}>Live Now</button><button className={hubView==='fixtures'?'active':''} onClick={()=>setHubView('fixtures')}>Fixtures</button><button className={hubView==='tables'?'active':''} onClick={()=>setHubView('tables')}>Table</button></div>
-          <div className="selectedCompetition">{activeTitle}</div>
+          <div className="siteAnnouncement" aria-label="Website announcement"><div className="announcementTrack"><span>🚀 STAMP IT FOOTBALL IS GROWING — MORE FEATURES ARE COMING SOON • PLEASE BEAR WITH US DURING THIS TESTING PERIOD • THE STAMP IT FOOTBALL APP IS COMING SOON 📱</span><span aria-hidden="true">🚀 STAMP IT FOOTBALL IS GROWING — MORE FEATURES ARE COMING SOON • PLEASE BEAR WITH US DURING THIS TESTING PERIOD • THE STAMP IT FOOTBALL APP IS COMING SOON 📱</span></div></div>
         </div>
         {hubView!=='tables'&&hubView!=='live'&&<div className="dateStrip compactDates"><button>‹</button><button className="active">Today</button><button>Tomorrow</button><button>{new Date(Date.now()+2*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</button><button>{new Date(Date.now()+3*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</button><button>›</button></div>}
 
