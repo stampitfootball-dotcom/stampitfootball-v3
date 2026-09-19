@@ -30,10 +30,13 @@ export async function GET(req) {
     const raw = fixtureData.response?.[0];
     if (!raw) return NextResponse.json({ configured: true, match: null }, { status: 404 });
 
-    const [statsResult, eventsResult, lineupsResult] = await Promise.allSettled([
+    const [statsResult, eventsResult, lineupsResult, homeFormResult, awayFormResult, h2hResult] = await Promise.allSettled([
       apiFootball('fixtures/statistics', { fixture: id }, 15),
       apiFootball('fixtures/events', { fixture: id }, 15),
       apiFootball('fixtures/lineups', { fixture: id }, 60),
+      apiFootball('fixtures', { team: raw.teams?.home?.id, last: 5 }, 300),
+      apiFootball('fixtures', { team: raw.teams?.away?.id, last: 5 }, 300),
+      apiFootball('fixtures/headtohead', { h2h: `${raw.teams?.home?.id}-${raw.teams?.away?.id}`, last: 5 }, 300),
     ]);
 
     const match = mapFixture(raw);
@@ -46,6 +49,18 @@ export async function GET(req) {
     match.lineups = mapLineups(lineupRows);
     match.hasStatistics = match.statistics.some(t => t.stats?.some(s => s.value !== null && s.value !== undefined));
     match.hasLineups = match.lineups.some(t => t.startXI?.length);
+    const completed = x => ['FT','AET','PEN'].includes(x?.fixture?.status?.short) && Number(x?.fixture?.id) !== Number(id);
+    const formRows = (result, teamId) => {
+      const rows = result.status === 'fulfilled' ? result.value.response || [] : [];
+      return rows.filter(completed).slice(-5).reverse().map(x => {
+        const m = mapFixture(x);
+        const home = Number(m.homeId) === Number(teamId);
+        const gf = home ? m.homeScore : m.awayScore, ga = home ? m.awayScore : m.homeScore;
+        return { ...m, result: gf > ga ? 'W' : gf < ga ? 'L' : 'D' };
+      });
+    };
+    match.form = { home: formRows(homeFormResult, match.homeId), away: formRows(awayFormResult, match.awayId) };
+    match.h2h = (h2hResult.status === 'fulfilled' ? h2hResult.value.response || [] : []).filter(completed).slice(-5).reverse().map(mapFixture);
 
     return NextResponse.json(
       { configured: true, match },
