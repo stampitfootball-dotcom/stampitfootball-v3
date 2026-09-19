@@ -118,3 +118,15 @@
  .compactHeader .brand img{width:67px!important;height:67px!important}.compactHeader .brand span b{font-size:21px!important}.compactHeader .brand span small{font-size:12px!important}
  .headerSloganWrap .headerSlogan{font-size:10px!important}.headerSloganWrap .socialLinks{gap:6px!important}.headerSloganWrap .socialLinks a{width:30px!important;height:30px!important}
 }
+
+/* Approved compact mobile reference */
+@media(max-width:760px){
+ .compactHeader{height:132px!important;min-height:132px!important;grid-template-rows:70px 42px!important;padding:9px 16px 10px!important;background:linear-gradient(180deg,#03130fd9,#03130ff0),url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat!important}
+ .compactHeader .brand img{width:64px!important;height:64px!important}.compactHeader .brand span b{font-size:22px!important}.compactHeader .brand span small{font-size:12px!important;letter-spacing:3px!important}
+ .compactHeader .headerSloganWrap{grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}
+ .headerSloganWrap .headerSlogan{font-size:10px!important}
+ .headerSloganWrap .socialLinks{gap:6px!important}.headerSloganWrap .socialLinks a{width:29px!important;height:29px!important}.headerSloganWrap .socialLinks a svg{width:17px!important;height:17px!important}
+ .footballHero{display:none!important}
+ .siteAnnouncement{margin-top:10px!important}
+ .footerSocialLinks .socialIcon.x{display:grid!important;visibility:visible!important;opacity:1!important}
+}
