@@ -98,3 +98,23 @@
  .headerSloganWrap .headerSlogan{font-size:11px!important}.headerSloganWrap .socialLinks{gap:10px!important}.headerSloganWrap .socialLinks a{width:37px!important;height:37px!important}
  .footballHero{min-height:190px!important}.footballHero strong{font-size:27px!important}.footballHero strong em{font-size:42px!important}
 }
+
+/* Mobile header compact containment fix */
+@media(max-width:760px){
+ .compactHeader{min-height:174px!important;height:174px!important;padding:10px 16px 12px!important;grid-template-columns:minmax(0,1fr) 42px 42px!important;grid-template-rows:82px 62px!important;overflow:hidden!important;background-position:center 58%!important}
+ .compactHeader .brand img{width:72px!important;height:72px!important}
+ .compactHeader .brand span b{font-size:23px!important}.compactHeader .brand span small{font-size:13px!important;letter-spacing:3px!important}
+ .compactHeader .loggedInButton{width:38px!important;height:38px!important;margin-top:4px!important}
+ .compactHeader .menuToggle{width:42px!important;height:42px!important;margin-top:4px!important}
+ .compactHeader .headerSloganWrap{position:static!important;grid-column:1/-1!important;grid-row:2!important;align-self:end!important;display:grid!important;grid-template-columns:1fr auto!important;align-items:center!important;gap:10px!important;padding:0!important;margin:0!important;min-height:0!important}
+ .headerSloganWrap .headerSlogan{font-size:11px!important;margin:0!important;white-space:nowrap!important}
+ .headerSloganWrap .socialLinks{gap:8px!important;justify-content:flex-end!important}
+ .headerSloganWrap .socialLinks a{width:32px!important;height:32px!important}
+ .headerSloganWrap .socialLinks a svg{width:18px!important;height:18px!important}
+ .countryBar{position:relative!important;z-index:1!important}
+}
+@media(max-width:390px){
+ .compactHeader{min-height:166px!important;height:166px!important;padding:9px 12px 10px!important;grid-template-columns:minmax(0,1fr) 39px 39px!important;grid-template-rows:78px 58px!important}
+ .compactHeader .brand img{width:67px!important;height:67px!important}.compactHeader .brand span b{font-size:21px!important}.compactHeader .brand span small{font-size:12px!important}
+ .headerSloganWrap .headerSlogan{font-size:10px!important}.headerSloganWrap .socialLinks{gap:6px!important}.headerSloganWrap .socialLinks a{width:30px!important;height:30px!important}
+}
