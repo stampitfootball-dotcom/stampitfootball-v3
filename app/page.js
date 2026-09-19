@@ -25,6 +25,14 @@ const orderedCountries=all=>[...new Set(all.map(l=>l.country).filter(Boolean))].
 const filterMatches=(list,country,league)=>sortMatches(list.filter(m=>(!country||m.country===country)&&(league==='all'||!league||Number(m.leagueId)===Number(league))));
 const countryLabel=c=>c==='World'?'UEFA / WORLD':c?.replace('Saudi-Arabia','Saudi Arabia');
 const countryWithFlag=c=>`${countryFlags[c]||'⚽'} ${countryLabel(c)}`;
+
+const socialLinks=[
+  {name:'Instagram',href:'https://www.instagram.com/stampitfootball/',icon:'◎'},
+  {name:'TikTok',href:'https://www.tiktok.com/@stamp.it.football',icon:'♪'},
+  {name:'Facebook',href:'https://www.facebook.com/stampitfootball',icon:'f'},
+  {name:'X',href:'https://x.com/stampitfootball',icon:'𝕏'}
+];
+function SocialLinks({footer=false}){return <div className={footer?'socialLinks footerSocialLinks':'socialLinks'}>{socialLinks.map(s=><a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.name} title={s.name}><span>{s.icon}</span></a>)}</div>}
 function articleTime(v){if(!v)return'NOW';try{return new Date(v).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{return'NOW'}}
 function kickoffTime(v){if(!v)return'—';try{return new Date(v).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{return'—'}}
 function liveMinute(m){
@@ -151,7 +159,7 @@ export default function Home(){
   return <main className="dashboardSite">
     <header className={`dashboardHeader compactHeader ${menuOpen?'menuOpen':''}`}>
       <a className="brand" href="#football" onClick={()=>setMenuOpen(false)}><img src="/assets/logo.jpeg"/><span><b>STAMP IT</b><small>FOOTBALL</small></span></a>
-      <div className="headerSlogan">IT’S FOOTBALL, <span>NOT SOCCER.</span></div>
+      <div className="headerSloganWrap"><div className="headerSlogan">IT’S FOOTBALL, <span>NOT SOCCER.</span></div><SocialLinks/></div>
       <nav><a href="#football" className={hubView==='scores'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('scores')}}>Scores</a><a href="#football" className={hubView==='live'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('live')}}>Live Now</a><a href="#football" className={hubView==='fixtures'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('fixtures')}}>Fixtures</a><a href="#football" className={hubView==='tables'?'activeNav':''} onClick={e=>{e.preventDefault();navHub('tables')}}>Tables</a><a href="#news" onClick={()=>setMenuOpen(false)}>News</a><a href="#predictions" onClick={()=>setMenuOpen(false)}>Predictions</a><a href="#drafts" onClick={()=>setMenuOpen(false)}>Fantasy</a></nav>
       <div className="socialMini"><b>@stampitfootball</b></div>
       <button className="loginButton" onClick={()=>gate('Welcome back')}>♙ Login</button>
@@ -183,6 +191,6 @@ export default function Home(){
 
     <section id="drafts" className="dashboardSection"><div className="sectionTitle"><div>Fantasy & Prizes</div><small>FREE TO JOIN</small></div><div className="split"><article className="panel prize"><div className="eyebrow">FREE ACCOUNT REQUIRED</div><h2>WEEKLY DRAFT</h2><div className="prizeAmount">WEEKLY PRIZE</div><p>Make your picks. Earn points. Climb the leaderboard.</p><button className="primary" onClick={()=>gate('Join the Weekly Draft')}>JOIN WEEKLY DRAFT</button></article><article className="panel prize"><div className="eyebrow">FREE ACCOUNT REQUIRED</div><h2>MONTHLY DRAFT</h2><div className="prizeAmount">MONTHLY PRIZE</div><p>Compete across the month for a bigger prize and monthly bragging rights.</p><button className="primary" onClick={()=>gate('Join the Monthly Draft')}>JOIN MONTHLY DRAFT</button></article></div></section>
 
-    <footer><b>STAMP IT FOOTBALL</b><span>IT’S FOOTBALL, NOT SOCCER.</span><span>@stampitfootball</span><span>Scores · News · Predictions · Fantasy</span></footer>
+    <footer><b>STAMP IT FOOTBALL</b><span>IT’S FOOTBALL, NOT SOCCER.</span><SocialLinks footer/><span>@stampitfootball</span><span>Scores · News · Predictions · Fantasy</span></footer>
     {auth&&<AuthModal close={()=>setAuth(false)} reason={reason}/>} {matchId&&<MatchModal id={matchId} close={()=>setMatchId(null)}/>}</main>
 }
