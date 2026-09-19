@@ -130,3 +130,17 @@
  .siteAnnouncement{margin-top:10px!important}
  .footerSocialLinks .socialIcon.x{display:grid!important;visibility:visible!important;opacity:1!important}
 }
+
+/* Mobile header alignment to approved reference */
+@media(max-width:760px){
+ .compactHeader{height:154px!important;min-height:154px!important;grid-template-columns:minmax(0,1fr) 42px 42px!important;grid-template-rows:84px 48px!important;padding:10px 16px 12px!important;overflow:hidden!important}
+ .compactHeader .brand{align-self:start!important}
+ .compactHeader .brand img{width:72px!important;height:72px!important}
+ .compactHeader .brand span b{font-size:23px!important}.compactHeader .brand span small{font-size:13px!important}
+ .compactHeader .loggedInButton{grid-column:2!important;grid-row:1!important;align-self:start!important;margin-top:13px!important}
+ .compactHeader .menuToggle{grid-column:3!important;grid-row:1!important;align-self:start!important;margin-top:13px!important}
+ .compactHeader .headerSloganWrap{grid-column:1/-1!important;grid-row:2!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important}
+ .headerSloganWrap .headerSlogan{font-size:10px!important;margin:0!important}
+ .headerSloganWrap .socialLinks{gap:7px!important}
+ .headerSloganWrap .socialLinks a{width:31px!important;height:31px!important}
+}
