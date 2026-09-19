@@ -42,3 +42,27 @@
  .footballHero strong{font-size:22px}.footballHero span{font-size:9px;letter-spacing:.55px;margin-top:9px}
  .siteAnnouncement{margin-top:2px!important}
 }
+
+/* Approved mockup parity fixes */
+@media(max-width:760px){
+ .compactHeader{grid-template-columns:minmax(0,1fr) 48px 48px!important;padding:14px 20px 16px!important;align-items:start!important}
+ .compactHeader .brand{max-width:290px!important}.compactHeader .brand img{width:92px!important;height:92px!important}.compactHeader .brand span b{font-size:28px!important}.compactHeader .brand span small{font-size:17px!important;letter-spacing:4px!important}
+ .compactHeader .headerSloganWrap{margin-top:-34px!important;padding-left:112px!important;min-height:76px!important}
+ .headerSloganWrap .headerSlogan{font-size:13px!important;font-weight:900!important;margin-bottom:11px!important}
+ .headerSloganWrap .socialLinks{gap:13px!important}.headerSloganWrap .socialLinks a{width:38px!important;height:38px!important}
+ .compactHeader .loggedInButton{grid-column:2!important;justify-self:center!important;margin-top:2px!important}
+ .compactHeader .menuToggle{grid-column:3!important;justify-self:end!important;margin:0!important;position:relative!important;right:auto!important;top:auto!important}
+ .socialIcon.x{display:grid!important}
+ .socialIcon.instagram span{font-size:22px!important}.socialIcon.tiktok span{font-size:20px!important}.socialIcon.facebook span{font-size:21px!important}.socialIcon.x span{font-size:18px!important;font-family:Arial,sans-serif!important;font-weight:500!important}
+ .footballHero{min-height:170px!important;background:radial-gradient(ellipse at 50% 100%,#087768 0,#074b41 24%,#06261f 52%,#04110e 78%)!important;box-shadow:inset 0 18px 45px #0008,inset 0 -16px 40px #22d6bf20!important}
+ .footballHero strong{display:flex!important;flex-direction:column!important;align-items:center!important;font-size:32px!important;line-height:.95!important;font-family:Impact,'Arial Black',sans-serif!important;transform:skew(-6deg);text-shadow:0 3px 4px #000}
+ .footballHero strong span{color:#fff!important}.footballHero strong em{font-size:42px!important;margin-top:5px!important;color:#2fe1cb!important}
+ .footballHero>span{font-size:10px!important;letter-spacing:1px!important;margin-top:15px!important}
+ .siteAnnouncement{height:50px!important;margin:12px 2px 0!important}
+}
+@media(max-width:390px){
+ .compactHeader{padding-left:14px!important;padding-right:14px!important;grid-template-columns:minmax(0,1fr) 44px 44px!important}
+ .compactHeader .brand img{width:78px!important;height:78px!important}.compactHeader .brand span b{font-size:24px!important}.compactHeader .brand span small{font-size:14px!important}
+ .compactHeader .headerSloganWrap{padding-left:94px!important;margin-top:-27px!important}
+ .headerSloganWrap .socialLinks a{width:35px!important;height:35px!important}
+}
